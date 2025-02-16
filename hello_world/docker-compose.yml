@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  neo4j:
+    image: neo4j:latest
+    container_name: neo4j
+    environment:
+      NEO4J_AUTH: neo4j/password
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    volumes:
+      - neo4j_data:/data
+    networks:
+      - neo4j_network
+
+  python-app:
+    build: ./python-app
+    container_name: python-app
+    depends_on:
+      - neo4j
+    networks:
+      - neo4j_network
+
+volumes:
+  neo4j_data:
+
+networks:
+  neo4j_network:
