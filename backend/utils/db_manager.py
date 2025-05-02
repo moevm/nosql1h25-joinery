@@ -219,3 +219,21 @@ class DatabaseManager:
             )
         )
         return True
+    
+
+    def get_user_feedback(self, login: str) -> list:
+        '''Получение всех отзывов об определённом пользователе'''
+        if not self.user_exists(login):
+            return None
+        feedback = self.session.execute_read(
+            lambda tx: tx.run(
+                '''MATCH (u:User)-[:Make]->(f:Feedback)-[a:About]->(:User {login: $login})
+                RETURN f.text AS text, 
+                    a.estimation AS estimation,
+                    u.full_name AS author''',
+                login=login
+            ).data()
+        )
+        if feedback is not None:
+            return feedback
+        return []
