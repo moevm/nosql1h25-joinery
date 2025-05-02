@@ -166,3 +166,56 @@ class DatabaseManager:
             lambda tx: tx.run(query, **params).data()
         )
         return [{**record['a'], 'master': record['master']} for record in announcements]
+
+
+    def create_user_feedback(self,
+            sender_login: str,
+            recipient_login: str,
+            text: str,
+            estimation: int
+    ) -> bool:
+        '''Создание отзыва с оценкой о пользователе'''
+        if not self.user_exists(sender_login) or not self.user_exists(recipient_login):
+            return False
+        # Создание нового отзыва
+        self.session.execute_write(
+            lambda tx: tx.run(
+                '''MATCH (u1:User {login: $login1}),
+                (u2:User {login: $login2})
+                CREATE (u1)-[:Make]->
+                       (:Feedback {text: $text})
+                       -[:About {estimation: $estimation}]->(u2)''',
+                login1=sender_login,
+                login2=recipient_login,
+                text=text,
+                estimation=estimation
+            )
+        )
+        return True
+    
+
+    def create_announcement_feedback(self,
+            sender_login: str,
+            master_login: str,
+            number: int,
+            text: str
+    ) -> bool:
+        '''Создание комментария об объявлении'''
+        if (not self.user_exists(sender_login) or 
+            self.get_announcement(master_login, number) is None):
+            return False
+        # Создание нового комментария
+        self.session.execute_write(
+            lambda tx: tx.run(
+                '''MATCH (u:User {login: $login1}),
+                (:User {login: $login2})-[c:Create {number: $number}]->(a:Announcement)
+                CREATE (u)-[:Make]->
+                       (:Feedback {text: $text})
+                       -[:About]->(a)''',
+                login1=sender_login,
+                login2=master_login,
+                number=number,
+                text=text
+            )
+        )
+        return True
