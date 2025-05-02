@@ -111,3 +111,58 @@ class DatabaseManager:
             )
         )
         return True
+
+
+    def get_announcement(self, login: str, number: int) -> dict:
+        '''Получение объявления по мастеру и номеру'''
+        announcement = self.session.execute_read(
+            lambda tx: tx.run(
+                '''MATCH (u:User {login: $login})
+                        -[c:Create {number: $number}]->
+                        (a:Announcement)
+                RETURN a''',
+                login=login,
+                number=number
+            ).single()
+        )
+        return dict(announcement['a']) if announcement else None
+
+
+    def get_announcements(self,
+            name: str = '', master: str = '',
+            width_min: float = .0, width_max: float = .0, 
+            height_min: float = .0, height_max: float = .0, 
+            length_min: float = .0, length_max: float = .0,
+            weight_min: float = .0, weight_max: float = .0,
+            amount_min: int = 0, amount_max: int = 0,
+            price_min: float = .0, price_max: float = .0,
+            address: str = ''
+    ) -> list:
+        '''Получение списка объявлений по заданным параметрам'''
+        # Представление переданных параметров в словаре
+        params = locals()
+        del params['self']
+        # Начальный текст запроса
+        query = '''
+            MATCH (u:User)-[:Create]->(a:Announcement)
+            WHERE a.name CONTAINS $name
+            AND u.full_name CONTAINS $master
+            AND a.width >= $width_min
+            AND a.height >= $height_min
+            AND a.length >= $length_min
+            AND a.weight >= $weight_min
+            AND a.amount >= $amount_min
+            AND a.price >= $price_min
+            AND a.address CONTAINS $address
+        '''
+        if width_max != .0: query += ' AND a.width <= $width_max'
+        if height_max != .0: query += ' AND a.height <= $height_max'
+        if length_max != .0: query += ' AND a.length <= $length_max'
+        if weight_max != .0: query += ' AND a.weight <= $weight_max'
+        if amount_max != 0: query += ' AND a.amount <= $amount_max'
+        if price_max != .0: query += ' AND a.price <= $price_max'
+        query += ' RETURN a, u.full_name AS master'
+        announcements = self.session.execute_read(
+            lambda tx: tx.run(query, **params).data()
+        )
+        return [{**record['a'], 'master': record['master']} for record in announcements]
