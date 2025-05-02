@@ -192,7 +192,7 @@ class DatabaseManager:
             )
         )
         return True
-    
+
 
     def create_announcement_feedback(self,
             sender_login: str,
@@ -219,7 +219,7 @@ class DatabaseManager:
             )
         )
         return True
-    
+
 
     def get_user_feedback(self, login: str) -> list:
         '''Получение всех отзывов об определённом пользователе'''
@@ -232,6 +232,28 @@ class DatabaseManager:
                     a.estimation AS estimation,
                     u.full_name AS author''',
                 login=login
+            ).data()
+        )
+        if feedback is not None:
+            return feedback
+        return []
+
+
+    def get_announcement_feedback(self, login: str, number: int) -> list:
+        '''Получение всех отзывов об определённом объявлении'''
+        if self.get_announcement(login, number) is None:
+            return None
+        feedback = self.session.execute_read(
+            lambda tx: tx.run(
+                '''
+                MATCH (:User {login: $login})
+                      -[:Create {number: $number}]->
+                      (a:Announcement)
+                MATCH (u:User)-[:Make]->(f:Feedback)-[:About]->(a)
+                RETURN f.text AS text,
+                    u.full_name AS author''',
+                login=login,
+                number=number
             ).data()
         )
         if feedback is not None:
