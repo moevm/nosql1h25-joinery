@@ -19,7 +19,7 @@ def create_user():
     if not all(field in data for field in required_field):
         return jsonify({'error': 'Не хватает полей'}), 400
 
-    seccess = db.create_user(
+    success = db.create_user(
         login=data['login'],
         password=data['password'],
         role=data['role'],
@@ -31,7 +31,7 @@ def create_user():
         photo_url=data.get('photo_url', 'no_photo.png')
     )
 
-    if seccess:
+    if success:
         return jsonify({'message': 'Пользователь создан'}), 201
     return jsonify({'message': 'Пользователь уже существует'}), 400
 
@@ -64,14 +64,14 @@ def create_user_feedback(login):
     if not all(field in data for field in required_field):
         return jsonify({'error': 'Не хватает полей'}), 400
 
-    seccess = db.create_user_feedback(
+    success = db.create_user_feedback(
         sender_login=data['sender_login'],
         recipient_login=login,
         text=data['text'],
         estimation=data['estimation'],
     )
 
-    if seccess:
+    if success:
         return jsonify({'message': 'Отзыв создан'}), 201
     return jsonify({'error': 'Ошибка при создании отзыва'}), 400
 
@@ -79,8 +79,8 @@ def create_user_feedback(login):
 # Получение всех объявлений, возможность фильтрации
 @app.route('/api/announcements/', methods=['GET'])
 def get_announcements():
-    seccess = db.get_announcements()
-    return jsonify(seccess)
+    success = db.get_announcements()
+    return jsonify(success)
 
 
 # Создание нового объявления
@@ -92,22 +92,22 @@ def create_announcement():
 
     if not all(field in data for field in required_field):
         return jsonify({'error': 'Не хватает полей'}), 400
-   
-    seccess = db.create_announcement(
+
+    success = db.create_announcement(
         login=data['login'],
-        name=data['name'], 
-        width=data['width'], 
-        height=data['height'], 
+        name=data['name'],
+        width=data['width'],
+        height=data['height'],
         length=data['length'],
         weight=data['weight'],
-        amount=data['amount'], 
-        price=data['price'], 
+        amount=data['amount'],
+        price=data['price'],
         address=data['address'],
-        description=data.get('description', ''), 
+        description=data.get('description', ''),
         photo_url=data.get('photo_url', 'no_photo.png')
     )
 
-    if seccess:
+    if success:
         return jsonify({'message': 'Новое объявление создано'}), 201
     return jsonify({'error': 'Пользователь не найден'}), 404
 
@@ -115,22 +115,21 @@ def create_announcement():
 # Получение объявления по логину мастера и номеру
 @app.route('/api/announcements/<login>/<number>/', methods=['GET'])
 def get_announcement(login, number):
-    seccess = db.get_announcement(login, number)
+    success = db.get_announcement(login, number)
 
-    if seccess:
-        return jsonify(seccess)
+    if success:
+        return jsonify(success)
     return jsonify({'error': 'Объявление не найдено'}), 404
 
 
 # Получение отзывов об объявлении
 @app.route('/api/announcements/<login>/<number>/comments/', methods=['GET'])
 def get_announcement_feedback(login, number):
-    seccess = db.get_announcement_feedback(login, number)
+    success = db.get_announcement_feedback(login, number)
 
-    if seccess != []:
-        return jsonify(seccess)
+    if success != []:
+        return jsonify(success)
     return jsonify({'error': 'Объявление не найдено'}), 404
-
 
 
 # Создание отзыва об объявлении
@@ -141,15 +140,15 @@ def create_announcement_feedback(login, number):
 
     if not all(field in data for field in required_field):
         return jsonify({'error': 'Не хватает полей'}), 400
-   
-    seccess = db.create_announcement(
+
+    success = db.create_announcement(
         sender_login=data['sender_login'],
-        master_login=data['master_login'], 
-        number=data['number'], 
+        master_login=data['master_login'],
+        number=data['number'],
         text=data['text']
     )
 
-    if seccess:
+    if success:
         return jsonify({'message': 'Новый отзыв об объявлении создан'}), 201
     return jsonify({'error': 'Ошибка при добавления отзыва'}), 400
 
