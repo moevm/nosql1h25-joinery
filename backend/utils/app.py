@@ -16,7 +16,7 @@ def index():
 def create_user():
     data = request.get_json()
     required_field = ['login', 'password', 'role', 'full_name', 'age']
-    if all(field in data for field in required_field):
+    if not all(field in data for field in required_field):
         return jsonify({'error': 'Не хватает полей'}), 400
 
     seccess = db.create_user(
@@ -60,8 +60,8 @@ def get_user_feedback(login):
 @app.route('/api/users/<login>/comments/', methods=['POST'])
 def create_user_feedback(login):
     data = request.get_json()
-    required_field = ['sender_login', 'recipient_login', 'text', 'estimation']
-    if all(field in data for field in required_field):
+    required_field = ['sender_login', 'text', 'estimation']
+    if not all(field in data for field in required_field):
         return jsonify({'error': 'Не хватает полей'}), 400
 
     seccess = db.create_user_feedback(
@@ -79,31 +79,79 @@ def create_user_feedback(login):
 # Получение всех объявлений, возможность фильтрации
 @app.route('/api/announcements/', methods=['GET'])
 def get_announcements():
-    pass
+    seccess = db.get_announcements()
+    return jsonify(seccess)
 
 
 # Создание нового объявления
 @app.route('/api/announcements/', methods=['POST'])
 def create_announcement():
-    pass
+    data = request.get_json()
+    required_field = ['login', 'name', 'width', 'height', 'length',
+                      'weight', 'amount', 'price', 'address']
+
+    if not all(field in data for field in required_field):
+        return jsonify({'error': 'Не хватает полей'}), 400
+   
+    seccess = db.create_announcement(
+        login=data['login'],
+        name=data['name'], 
+        width=data['width'], 
+        height=data['height'], 
+        length=data['length'],
+        weight=data['weight'],
+        amount=data['amount'], 
+        price=data['price'], 
+        address=data['address'],
+        description=data.get('description', ''), 
+        photo_url=data.get('photo_url', 'no_photo.png')
+    )
+
+    if seccess:
+        return jsonify({'message': 'Новое объявление создано'}), 201
+    return jsonify({'error': 'Пользователь не найден'}), 404
 
 
 # Получение объявления по логину мастера и номеру
 @app.route('/api/announcements/<login>/<number>/', methods=['GET'])
 def get_announcement(login, number):
-    pass
+    seccess = db.get_announcement(login, number)
+
+    if seccess:
+        return jsonify(seccess)
+    return jsonify({'error': 'Объявление не найдено'}), 404
 
 
 # Получение отзывов об объявлении
 @app.route('/api/announcements/<login>/<number>/comments/', methods=['GET'])
 def get_announcement_feedback(login, number):
-    pass
+    seccess = db.get_announcement_feedback(login, number)
+
+    if seccess != []:
+        return jsonify(seccess)
+    return jsonify({'error': 'Объявление не найдено'}), 404
+
 
 
 # Создание отзыва об объявлении
 @app.route('/api/announcements/<login>/<number>/comments/', methods=['POST'])
 def create_announcement_feedback(login, number):
-    pass
+    data = request.get_json()
+    required_field = ['sender_login', 'master_login', 'winumberdth', 'text']
+
+    if not all(field in data for field in required_field):
+        return jsonify({'error': 'Не хватает полей'}), 400
+   
+    seccess = db.create_announcement(
+        sender_login=data['sender_login'],
+        master_login=data['master_login'], 
+        number=data['number'], 
+        text=data['text']
+    )
+
+    if seccess:
+        return jsonify({'message': 'Новый отзыв об объявлении создан'}), 201
+    return jsonify({'error': 'Ошибка при добавления отзыва'}), 400
 
 
 if __name__ == '__main__':
