@@ -1,0 +1,16 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Сначала скопируем requirements.txt
+COPY backend/utils/requirements.txt .
+
+# Установим зависимости
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Затем скопируем остальной код
+COPY backend /app
+
+EXPOSE 5000
+
+CMD ["python", "utils/app.py"]
