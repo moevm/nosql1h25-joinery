@@ -18,7 +18,7 @@ def index():
 def create_user():
     data = request.get_json()
     required_field = ['login', 'password', 'role', 'full_name', 'age']
-    if not all(field in data for field in required_field):
+    if not data or not all(field in data for field in required_field):
         return jsonify({'error': 'Не хватает полей'}), 400
 
     success = db.create_user(
@@ -63,7 +63,7 @@ def get_user_feedback(login):
 def create_user_feedback(login):
     data = request.get_json()
     required_field = ['sender_login', 'text', 'estimation']
-    if not all(field in data for field in required_field):
+    if not data or not all(field in data for field in required_field):
         return jsonify({'error': 'Не хватает полей'}), 400
 
     success = db.create_user_feedback(
@@ -92,7 +92,7 @@ def create_announcement():
     required_field = ['login', 'name', 'width', 'height', 'length',
                       'weight', 'amount', 'price', 'address']
 
-    if not all(field in data for field in required_field):
+    if not data or not all(field in data for field in required_field):
         return jsonify({'error': 'Не хватает полей'}), 400
 
     success = db.create_announcement(
@@ -138,12 +138,12 @@ def get_announcement_feedback(login, number):
 @app.route('/api/announcements/<login>/<number>/comments/', methods=['POST'])
 def create_announcement_feedback(login, number):
     data = request.get_json()
-    required_field = ['sender_login', 'master_login', 'winumberdth', 'text']
+    required_field = ['sender_login', 'master_login', 'number', 'text']
 
-    if not all(field in data for field in required_field):
+    if not data or not all(field in data for field in required_field):
         return jsonify({'error': 'Не хватает полей'}), 400
 
-    success = db.create_announcement(
+    success = db.db.create_announcement_feedback(
         sender_login=data['sender_login'],
         master_login=data['master_login'],
         number=data['number'],
