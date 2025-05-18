@@ -162,7 +162,7 @@ def create_announcement_feedback(login, number):
         text=data['text']
     )
     
-    return 200
+    return jsonify({'message': 'OK'}), 200
 
 @app.route('/api/login', methods=['POST'])
 def login():
