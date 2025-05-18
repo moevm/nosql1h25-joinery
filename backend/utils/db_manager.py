@@ -157,7 +157,7 @@ class DatabaseManager:
         del params['self']
         # Начальный текст запроса
         query = '''
-            MATCH (u:User)-[:Create]->(a:Announcement)
+            MATCH (u:User)-[c:Create]->(a:Announcement)
             WHERE a.name CONTAINS $name
             AND u.full_name CONTAINS $master
             AND a.width >= $width_min
@@ -174,11 +174,11 @@ class DatabaseManager:
         if weight_max != .0: query += ' AND a.weight <= $weight_max'
         if amount_max != 0: query += ' AND a.amount <= $amount_max'
         if price_max != .0: query += ' AND a.price <= $price_max'
-        query += ' RETURN a, u.full_name AS master'
+        query += ' RETURN a, u.full_name AS master, c.number AS number'
         announcements = self.session.execute_read(
             lambda tx: tx.run(query, **params).data()
         )
-        return [{**record['a'], 'master': record['master']} for record in announcements]
+        return [{**record['a'], 'master': record['master'], 'number': record['number']} for record in announcements]
 
 
     def create_user_feedback(self,
