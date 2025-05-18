@@ -133,12 +133,12 @@ class DatabaseManager:
                 '''MATCH (u:User {login: $login})
                         -[c:Create {number: $number}]->
                         (a:Announcement)
-                RETURN a''',
+                RETURN a, u.login AS master''',
                 login=login,
                 number=number
             ).single()
         )
-        return dict(announcement['a']) if announcement else None
+        return {**announcement['a'], 'master': announcement['master']} if announcement else None
 
 
     def get_announcements(self,
@@ -174,7 +174,7 @@ class DatabaseManager:
         if weight_max != .0: query += ' AND a.weight <= $weight_max'
         if amount_max != 0: query += ' AND a.amount <= $amount_max'
         if price_max != .0: query += ' AND a.price <= $price_max'
-        query += ' RETURN a, u.full_name AS master, c.number AS number'
+        query += ' RETURN a, u.login AS master, c.number AS number'
         announcements = self.session.execute_read(
             lambda tx: tx.run(query, **params).data()
         )
