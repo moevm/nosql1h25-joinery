@@ -1,15 +1,28 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from db_manager import DatabaseManager
+from neo4j.time import DateTime
 
 app = Flask(__name__)
 CORS(app)
 db = DatabaseManager()
 
+
 # Проверочная страница
 @app.route('/')
 def index():
     return "API работает!"
+
+
+def convert(obj):
+    if isinstance(obj, dict):
+        return {k: convert(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [convert(v) for v in obj]
+    elif isinstance(obj, DateTime):
+        return obj.iso_format()
+    else:
+        return obj
 
 
 # Создание нового пользователя
@@ -43,7 +56,7 @@ def get_user(login):
     user = db.get_user(login)
 
     if user:
-        return jsonify(user)
+        return jsonify(convert(user))
     return jsonify({'error': 'Пользователь не найден'}), 404
 
 
@@ -80,8 +93,8 @@ def create_user_feedback(login):
 # Получение всех объявлений, возможность фильтрации
 @app.route('/api/announcements/', methods=['GET'])
 def get_announcements():
-    success = db.get_announcements()
-    return jsonify(success)
+    announcements = db.get_announcements()
+    return jsonify(convert(announcements))
 
 
 # Создание нового объявления
@@ -154,26 +167,5 @@ def create_announcement_feedback(login, number):
     return jsonify({'error': 'Ошибка при добавления отзыва'}), 400
 
 
-@app.route('/api/login', methods=['POST'])
-def login():
-    data = request.get_json()
-    login = data.get('login')
-    password = data.get('password')
-
-    if not login or not password:
-        return jsonify({'error': 'Не хватает логина или пароля'}), 400
-
-    if db.authorize_user(login, password):
-        user = db.get_user(login)
-        return jsonify({
-            'message': 'Успешный вход',
-            'login': login,
-            'role': user.get('role', ''),
-            'full_name': user.get('full_name', '')
-        }), 200
-    else:
-        return jsonify({'error': 'Неверный логин или пароль'}), 401
-
-
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(debug=True)
