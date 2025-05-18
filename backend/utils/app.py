@@ -1,15 +1,28 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from db_manager import DatabaseManager
+from neo4j.time import DateTime
 
 app = Flask(__name__)
 CORS(app)
 db = DatabaseManager()
 
+
 # Проверочная страница
 @app.route('/')
 def index():
     return "API работает!"
+
+
+def convert(obj):
+    if isinstance(obj, dict):
+        return {k: convert(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [convert(v) for v in obj]
+    elif isinstance(obj, DateTime):
+        return obj.iso_format()
+    else:
+        return obj
 
 
 # Создание нового пользователя
@@ -43,7 +56,7 @@ def get_user(login):
     user = db.get_user(login)
 
     if user:
-        return jsonify(user)
+        return jsonify(convert(user))
     return jsonify({'error': 'Пользователь не найден'}), 404
 
 
@@ -80,8 +93,8 @@ def create_user_feedback(login):
 # Получение всех объявлений, возможность фильтрации
 @app.route('/api/announcements/', methods=['GET'])
 def get_announcements():
-    success = db.get_announcements()
-    return jsonify(success)
+    announcements = db.get_announcements()
+    return jsonify(convert(announcements))
 
 
 # Создание нового объявления
@@ -133,7 +146,7 @@ def get_announcement_feedback(login, number):
     return jsonify({'error': 'Объявление не найдено'}), 404
 
 
-# Создание отзыва об объявлении
+
 @app.route('/api/announcements/<login>/<number>/comments/', methods=['POST'])
 def create_announcement_feedback(login, number):
     data = request.get_json()
@@ -148,11 +161,8 @@ def create_announcement_feedback(login, number):
         number=number,
         text=data['text']
     )
-
-    if success:
-        return jsonify({'message': 'Новый отзыв об объявлении создан'}), 201
-    return jsonify({'error': 'Ошибка при добавления отзыва'}), 400
-
+    
+    return 200
 
 @app.route('/api/login', methods=['POST'])
 def login():
@@ -175,5 +185,6 @@ def login():
         return jsonify({'error': 'Неверный логин или пароль'}), 401
 
 
+
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(debug=True, host="0.0.0.0", port=5000)
