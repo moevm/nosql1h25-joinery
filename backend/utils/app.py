@@ -164,7 +164,7 @@ def create_announcement_feedback(login, number):
 
     if not data or not all(field in data for field in required_field):
         return jsonify({'error': 'Не хватает полей'}), 400
-
+    print(data)
     success = db.create_announcement_feedback(
         sender_login=data['sender_login'],
         master_login=login,
