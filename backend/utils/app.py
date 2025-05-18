@@ -93,7 +93,16 @@ def create_user_feedback(login):
 # Получение всех объявлений, возможность фильтрации
 @app.route('/api/announcements/', methods=['GET'])
 def get_announcements():
-    data = request.get_json()
+    filters = {
+        'name': '', 'master': '', 'width_min': .0, 'width_max': .0, 
+        'height_min': .0, 'height_max': .0, 'length_min': .0, 
+        'length_max': .0, 'weight_min': .0, 'weight_max': .0,
+        'amount_min': .0, 'amount_max': .0, 'price_min': .0, 
+        'price_max': .0, 'address': ''
+    }
+    data = {}
+    for filter, value in filters.items():
+        data[filter] = request.args.get(filter, default=value)
     announcements = db.get_announcements(**data)
     return jsonify(convert(announcements))
 
