@@ -1,9 +1,10 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 from db_manager import DatabaseManager
 
 app = Flask(__name__)
+CORS(app)
 db = DatabaseManager()
-
 
 # Проверочная страница
 @app.route('/')
@@ -154,4 +155,5 @@ def create_announcement_feedback(login, number):
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, host='0.0.0.0', port=5000)
+
