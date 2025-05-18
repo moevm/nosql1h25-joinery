@@ -1,28 +1,15 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from db_manager import DatabaseManager
-from neo4j.time import DateTime
 
 app = Flask(__name__)
 CORS(app)
 db = DatabaseManager()
 
-
 # Проверочная страница
 @app.route('/')
 def index():
     return "API работает!"
-
-
-def convert(obj):
-    if isinstance(obj, dict):
-        return {k: convert(v) for k, v in obj.items()}
-    elif isinstance(obj, list):
-        return [convert(v) for v in obj]
-    elif isinstance(obj, DateTime):
-        return obj.iso_format()
-    else:
-        return obj
 
 
 # Создание нового пользователя
@@ -51,12 +38,12 @@ def create_user():
 
 
 # Получение пользователя по его логину
-@app.route('/api/users/<login>', methods=['GET'])
+@app.route('/api/users/<login>/', methods=['GET'])
 def get_user(login):
     user = db.get_user(login)
 
     if user:
-        return jsonify(convert(user))
+        return jsonify(user)
     return jsonify({'error': 'Пользователь не найден'}), 404
 
 
@@ -93,8 +80,8 @@ def create_user_feedback(login):
 # Получение всех объявлений, возможность фильтрации
 @app.route('/api/announcements/', methods=['GET'])
 def get_announcements():
-    announcements = db.get_announcements()
-    return jsonify(convert(announcements))
+    success = db.get_announcements()
+    return jsonify(success)
 
 
 # Создание нового объявления
@@ -150,15 +137,15 @@ def get_announcement_feedback(login, number):
 @app.route('/api/announcements/<login>/<number>/comments/', methods=['POST'])
 def create_announcement_feedback(login, number):
     data = request.get_json()
-    required_field = ['sender_login', 'master_login', 'number', 'text']
+    required_field = ['sender_login', 'text']
 
     if not data or not all(field in data for field in required_field):
         return jsonify({'error': 'Не хватает полей'}), 400
 
-    success = db.db.create_announcement_feedback(
+    success = db.create_announcement_feedback(
         sender_login=data['sender_login'],
-        master_login=data['master_login'],
-        number=data['number'],
+        master_login=login,
+        number=number,
         text=data['text']
     )
 
@@ -167,5 +154,26 @@ def create_announcement_feedback(login, number):
     return jsonify({'error': 'Ошибка при добавления отзыва'}), 400
 
 
+@app.route('/api/login', methods=['POST'])
+def login():
+    data = request.get_json()
+    login = data.get('login')
+    password = data.get('password')
+
+    if not login or not password:
+        return jsonify({'error': 'Не хватает логина или пароля'}), 400
+
+    if db.authorize_user(login, password):
+        user = db.get_user(login)
+        return jsonify({
+            'message': 'Успешный вход',
+            'login': login,
+            'role': user.get('role', ''),
+            'full_name': user.get('full_name', '')
+        }), 200
+    else:
+        return jsonify({'error': 'Неверный логин или пароль'}), 401
+
+
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, host='0.0.0.0', port=5000)
