@@ -154,6 +154,26 @@ def create_announcement_feedback(login, number):
     return jsonify({'error': 'Ошибка при добавления отзыва'}), 400
 
 
+@app.route('/api/login', methods=['POST'])
+def login():
+    data = request.get_json()
+    login = data.get('login')
+    password = data.get('password')
+
+    if not login or not password:
+        return jsonify({'error': 'Не хватает логина или пароля'}), 400
+
+    if db.authorize_user(login, password):
+        user = db.get_user(login)
+        return jsonify({
+            'message': 'Успешный вход',
+            'login': login,
+            'role': user.get('role', ''),
+            'full_name': user.get('full_name', '')
+        }), 200
+    else:
+        return jsonify({'error': 'Неверный логин или пароль'}), 401
+
+
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
-
