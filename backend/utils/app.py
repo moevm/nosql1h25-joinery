@@ -93,7 +93,8 @@ def create_user_feedback(login):
 # Получение всех объявлений, возможность фильтрации
 @app.route('/api/announcements/', methods=['GET'])
 def get_announcements():
-    announcements = db.get_announcements()
+    data = request.get_json()
+    announcements = db.get_announcements(**data)
     return jsonify(convert(announcements))
 
 
@@ -132,7 +133,7 @@ def get_announcement(login, number):
     success = db.get_announcement(login, number)
 
     if success:
-        return jsonify(success)
+        return jsonify(convert(success))
     return jsonify({'error': 'Объявление не найдено'}), 404
 
 
@@ -164,7 +165,7 @@ def create_announcement_feedback(login, number):
     
     return jsonify({'message': 'OK'}), 200
 
-@app.route('/api/login', methods=['POST'])
+@app.route('/api/login/', methods=['POST'])
 def login():
     data = request.get_json()
     login = data.get('login')

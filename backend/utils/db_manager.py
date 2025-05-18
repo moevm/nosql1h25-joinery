@@ -166,7 +166,7 @@ class DatabaseManager:
             AND a.weight >= $weight_min
             AND a.amount >= $amount_min
             AND a.price >= $price_min
-            AND a.address CONTAINS $address
+            AND toLower(a.address) CONTAINS toLower($address)
         '''
         if width_max != .0: query += ' AND a.width <= $width_max'
         if height_max != .0: query += ' AND a.height <= $height_max'
@@ -243,7 +243,7 @@ class DatabaseManager:
                 '''MATCH (u:User)-[:Make]->(f:Feedback)-[a:About]->(:User {login: $login})
                 RETURN f.text AS text, 
                     a.estimation AS estimation,
-                    u.full_name AS author''',
+                    u.login AS author''',
                 login=login
             ).data()
         )
@@ -264,7 +264,7 @@ class DatabaseManager:
                       (a:Announcement)
                 MATCH (u:User)-[:Make]->(f:Feedback)-[:About]->(a)
                 RETURN f.text AS text,
-                    u.full_name AS author''',
+                    u.login AS author''',
                 login=login,
                 number=number
             ).data()
