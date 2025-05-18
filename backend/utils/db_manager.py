@@ -35,6 +35,19 @@ class DatabaseManager:
             ).single()
         )
         return dict(user['u']) if user else None
+    
+
+    def authorize_user(self, login: str, password: str) -> bool:
+        '''Авторизация пользователя по логину и паролю'''
+        user = self.session.execute_read(
+            lambda tx: tx.run(
+                '''MATCH (u:User {login: $login, password: $password})
+                RETURN u AS u''',
+                login=login,
+                password=password
+            ).single()
+        )
+        return True if user else False
 
 
     def user_exists(self, login: str) -> bool:
