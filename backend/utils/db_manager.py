@@ -149,7 +149,7 @@ class DatabaseManager:
             weight_min: float = .0, weight_max: float = .0,
             amount_min: int = 0, amount_max: int = 0,
             price_min: float = .0, price_max: float = .0,
-            address: str = ''
+            address: str = '', **kwargs
     ) -> list:
         '''Получение списка объявлений по заданным параметрам'''
         # Представление переданных параметров в словаре
