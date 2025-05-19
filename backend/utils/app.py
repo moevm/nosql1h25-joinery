@@ -65,9 +65,9 @@ def get_user(login):
 def get_user_feedback(login):
     feedback = db.get_user_feedback(login)
 
-    if feedback != []:
+    if feedback:
         return jsonify(feedback)
-    return jsonify({'error': 'Отзыв не найден'}), 404
+    return jsonify({'error': 'Пользователь не найден'}), 404
 
 
 # Создание отзыва о пользователе
@@ -151,12 +151,12 @@ def get_announcement(login, number):
 def get_announcement_feedback(login, number):
     success = db.get_announcement_feedback(login, number)
 
-    if success != []:
+    if success:
         return jsonify(success)
     return jsonify({'error': 'Объявление не найдено'}), 404
 
 
-
+# Оставление комментария
 @app.route('/api/announcements/<login>/<number>/comments/', methods=['POST'])
 def create_announcement_feedback(login, number):
     data = request.get_json()
@@ -171,8 +171,12 @@ def create_announcement_feedback(login, number):
         text=data['text']
     )
     
-    return jsonify({'message': 'OK'}), 200
+    if success:
+        return jsonify({'message': 'OK'}), 201
+    return jsonify({'error': 'Объявление не найдено'}), 404
 
+
+# Авторизация пользователя с логином и паролем
 @app.route('/api/login/', methods=['POST'])
 def login():
     data = request.get_json()
