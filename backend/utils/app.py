@@ -141,6 +141,10 @@ def create_announcement():
 def get_announcement(login, number):
     success = db.get_announcement(login, number)
 
+    if not number.isnumeric():
+        return jsonify({'error': 'Номер объявления некорректный'}), 401
+    number = int(number)
+
     if success:
         return jsonify(convert(success))
     return jsonify({'error': 'Объявление не найдено'}), 404
@@ -150,6 +154,10 @@ def get_announcement(login, number):
 @app.route('/api/announcements/<login>/<number>/comments/', methods=['GET'])
 def get_announcement_feedback(login, number):
     success = db.get_announcement_feedback(login, number)
+
+    if not number.isnumeric():
+        return jsonify({'error': 'Номер объявления некорректный'}), 401
+    number = int(number)
 
     if success:
         return jsonify(success)
@@ -164,6 +172,11 @@ def create_announcement_feedback(login, number):
 
     if not data or not all(field in data for field in required_field):
         return jsonify({'error': 'Не хватает полей'}), 400
+
+    if not number.isnumeric():
+        return jsonify({'error': 'Номер объявления некорректный'}), 401
+    number = int(number)
+
     success = db.create_announcement_feedback(
         sender_login=data['sender_login'],
         master_login=login,
