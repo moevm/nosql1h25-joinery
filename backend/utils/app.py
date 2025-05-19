@@ -139,11 +139,11 @@ def create_announcement():
 # Получение объявления по логину мастера и номеру
 @app.route('/api/announcements/<login>/<number>/', methods=['GET'])
 def get_announcement(login, number):
-    success = db.get_announcement(login, number)
-
     if not number.isnumeric():
         return jsonify({'error': 'Номер объявления некорректный'}), 401
     number = int(number)
+
+    success = db.get_announcement(login, number)
 
     if success:
         return jsonify(convert(success))
@@ -153,11 +153,11 @@ def get_announcement(login, number):
 # Получение отзывов об объявлении
 @app.route('/api/announcements/<login>/<number>/comments/', methods=['GET'])
 def get_announcement_feedback(login, number):
-    success = db.get_announcement_feedback(login, number)
-
     if not number.isnumeric():
         return jsonify({'error': 'Номер объявления некорректный'}), 401
     number = int(number)
+
+    success = db.get_announcement_feedback(login, number)
 
     if success:
         return jsonify(success)
