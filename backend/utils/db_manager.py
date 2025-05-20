@@ -15,7 +15,7 @@ class DatabaseManager:
 
 
     def __del__(self):
-        '''Деструктор, закрывающий сессию'''
+        '''Деструктор, закрывающий драйвер'''
         self.driver.close()
 
 
@@ -162,8 +162,8 @@ class DatabaseManager:
         # Начальный текст запроса
         query = '''
             MATCH (u:User)-[c:Create]->(a:Announcement)
-            WHERE a.name CONTAINS $name
-            AND u.full_name CONTAINS $master
+            WHERE toLower(a.name) CONTAINS toLower($name)
+            AND toLower(u.full_name) CONTAINS toLower($master)
             AND a.width >= $width_min
             AND a.height >= $height_min
             AND a.length >= $length_min
