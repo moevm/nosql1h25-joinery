@@ -13,4 +13,4 @@ COPY backend /app
 
 EXPOSE 5000
 
-CMD ["python", "utils/app.py"]
+CMD ["python", "app.py"]

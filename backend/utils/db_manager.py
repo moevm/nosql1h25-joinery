@@ -1,23 +1,8 @@
-from neo4j import GraphDatabase
+from .db_main import DatabaseConnection
 
 
-class DatabaseManager:
+class DatabaseManager(DatabaseConnection):
     '''База данных для сервиса по купле/продаже остатков производства'''
-
-    def __init__(
-        self,
-        uri: str = 'bolt://neo4j:7687',
-        user: str = 'neo4j',
-        password: str = '12345678'
-    ):
-        '''Инициализация с подключением к базе данных'''
-        self.driver = GraphDatabase.driver(uri, auth=(user, password))
-
-
-    def __del__(self):
-        '''Деструктор, закрывающий драйвер'''
-        self.driver.close()
-
 
     def get_user(self, login: str) -> dict:
         '''Получение пользователя по его логину'''
