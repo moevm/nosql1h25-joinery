@@ -97,12 +97,16 @@ def get_announcements():
         'name': '', 'master': '', 'width_min': .0, 'width_max': .0, 
         'height_min': .0, 'height_max': .0, 'length_min': .0, 
         'length_max': .0, 'weight_min': .0, 'weight_max': .0,
-        'amount_min': .0, 'amount_max': .0, 'price_min': .0, 
+        'amount_min': 0, 'amount_max': 0, 'price_min': .0, 
         'price_max': .0, 'address': ''
     }
     data = {}
     for filter, value in filters.items():
         data[filter] = request.args.get(filter, default=value)
+        try:
+            data[filter] = type(value)(data[filter])
+        except (ValueError, TypeError):
+            return jsonify({'error': f'Некорректный тип данных {filter}'}), 400
     announcements = db.get_announcements(**data)
     return jsonify(convert(announcements))
 
