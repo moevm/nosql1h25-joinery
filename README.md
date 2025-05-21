@@ -1,5 +1,29 @@
 # nosql_template
+  
+  Запуск приложения 
+  
+          git clone https://github.com/moevm/nosql1h25-joinery.git
 
+          cd nosql1h25-joinery
+          
+          docker-compose up --build
+
+  Отладочные пользователи:
+  
+  Администратор
+          
+    - login - admin
+    - password - password  
+    
+  Мастер
+  
+    - login - seller
+    - password - password
+
+  Покупатель
+  
+    - login - buyer
+    - password - password
 
 ## Предварительная проверка заданий
 
