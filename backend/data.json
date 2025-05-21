@@ -1,121 +1,140 @@
 {
-  "nodes": [
-    {
-      "id": 0,
-      "labels": [
-        "User"
-      ],
-      "properties": {
-        "updated_at": "2025-04-21T19:34:17.026000000+00:00",
-        "status": "active",
-        "description": "",
-        "photo_url": "public/img/no_photo.png",
-        "age": 27,
-        "role": "seller",
-        "created_at": "2025-04-21T19:34:17.026000000+00:00",
-        "login": "seller",
-        "education": "ETU \"LETI\"",
-        "password": "pwd12345",
-        "full_name": "Гарри Гудини"
-      }
-    },
-    {
-      "id": 1,
-      "labels": [
-        "Announcement"
-      ],
-      "properties": {
-        "amount": 100,
-        "updated_at": "2025-04-21T19:34:17.070000000+00:00",
-        "price": 2000,
-        "weight": 2.5,
-        "height": 1.0,
-        "address": "Москва",
-        "description": "Отличные опилки",
-        "photo_url": "public/img/no_photo.png",
-        "name": "Опилки",
-        "width": 1.1,
-        "length": 1.2,
-        "created_at": "2025-04-21T19:34:17.070000000+00:00"
-      }
-    },
-    {
-      "id": 2,
-      "labels": [
-        "User"
-      ],
-      "properties": {
-        "updated_at": "2025-04-21T19:34:16.971000000+00:00",
-        "status": "active",
-        "description": "",
-        "photo_url": "public/img/no_photo.png",
-        "age": 18,
-        "role": "buyer",
-        "created_at": "2025-04-21T19:34:16.971000000+00:00",
-        "login": "buyer",
-        "education": "ETU \"LETI\"",
-        "password": "password",
-        "full_name": "Джон Уик"
-      }
-    },
-    {
-      "id": 3,
-      "labels": [
-        "Feedback"
-      ],
-      "properties": {
-        "text": "Достаточно неплохой мастер"
-      }
-    },
-    {
-      "id": 5,
-      "labels": [
-        "Feedback"
-      ],
-      "properties": {
-        "text": "К данным опилкам присматриваться не советовал бы"
-      }
-    }
-  ],
-  "relationships": [
-    {
-      "id": 6917529027641081857,
-      "type": "Create",
-      "start_node": 0,
-      "end_node": 1,
-      "properties": {
-        "number": 1
-      }
-    },
-    {
-      "id": 6917530127152709635,
-      "type": "Make",
-      "start_node": 2,
-      "end_node": 3,
-      "properties": {}
-    },
-    {
-      "id": 6917530127152709637,
-      "type": "Make",
-      "start_node": 2,
-      "end_node": 5,
-      "properties": {}
-    },
-    {
-      "id": 1152923703630102531,
-      "type": "About",
-      "start_node": 3,
-      "end_node": 0,
-      "properties": {
-        "estimation": 5
-      }
-    },
-    {
-      "id": 1152923703630102533,
-      "type": "About",
-      "start_node": 5,
-      "end_node": 1,
-      "properties": {}
-    }
-  ]
+    "nodes": [
+        {
+            "id": 0,
+            "labels": [
+                "User"
+            ],
+            "properties": {
+                "age": 27,
+                "created_at": "2025-04-21T19:34:17.026000000",
+                "description": "",
+                "education": "ETU \"LETI\"",
+                "full_name": "Мастер",
+                "login": "seller",
+                "password": "password",
+                "photo_url": "public/img/no_photo.png",
+                "role": "seller",
+                "status": "active",
+                "updated_at": "2025-04-21T19:34:17.026000000"
+            }
+        },
+        {
+            "id": 1,
+            "labels": [
+                "Announcement"
+            ],
+            "properties": {
+                "address": "Москва",
+                "amount": 100,
+                "created_at": "2025-04-21T19:34:17.070000000",
+                "description": "Отличные опилки",
+                "height": 1.0,
+                "length": 1.2,
+                "name": "Опилки",
+                "photo_url": "public/img/no_photo.png",
+                "price": 2000,
+                "updated_at": "2025-04-21T19:34:17.070000000",
+                "weight": 2.5,
+                "width": 1.1
+            }
+        },
+        {
+            "id": 2,
+            "labels": [
+                "User"
+            ],
+            "properties": {
+                "age": 18,
+                "created_at": "2025-04-21T19:34:16.971000000",
+                "description": "",
+                "education": "ETU \"LETI\"",
+                "full_name": "Покупатель",
+                "login": "buyer",
+                "password": "password",
+                "photo_url": "public/img/no_photo.png",
+                "role": "buyer",
+                "status": "active",
+                "updated_at": "2025-04-21T19:34:16.971000000"
+            }
+        },
+        {
+            "id": 3,
+            "labels": [
+                "Feedback"
+            ],
+            "properties": {
+                "text": "Достаточно неплохой мастер"
+            }
+        },
+        {
+            "id": 4,
+            "labels": [
+                "Feedback"
+            ],
+            "properties": {
+                "text": "К данным опилкам присматриваться не советовал бы"
+            }
+        },
+        {
+            "id": 5,
+            "labels": [
+                "User"
+            ],
+            "properties": {
+                "age": 20,
+                "created_at": "2025-05-21T11:40:32.104000000+00:00",
+                "description": "",
+                "education": "",
+                "full_name": "Админ",
+                "login": "admin",
+                "password": "password",
+                "photo_url": "no_photo.png",
+                "role": "admin",
+                "status": "active",
+                "updated_at": "2025-05-21T11:40:32.104000000+00:00"
+            }
+        }
+    ],
+    "relationships": [
+        {
+            "end_node": 1,
+            "id": 0,
+            "properties": {
+                "number": 1
+            },
+            "start_node": 0,
+            "type": "Create"
+        },
+        {
+            "end_node": 3,
+            "id": 1,
+            "properties": {},
+            "start_node": 2,
+            "type": "Make"
+        },
+        {
+            "end_node": 4,
+            "id": 2,
+            "properties": {},
+            "start_node": 2,
+            "type": "Make"
+        },
+        {
+            "end_node": 0,
+            "id": 3,
+            "properties": {
+                "estimation": 5
+            },
+            "start_node": 3,
+            "type": "About"
+        },
+        {
+            "end_node": 1,
+            "id": 4,
+            "properties": {},
+            "start_node": 4,
+            "type": "About"
+        }
+    ]
 }

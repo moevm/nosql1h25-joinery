@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  neo4j:
+  db:
     image: neo4j:5.19
     environment:
       NEO4J_AUTH: neo4j/12345678
@@ -18,7 +18,7 @@ services:
     ports:
       - "5000:5000"
     depends_on:
-      - neo4j
+      - bd
 
   frontend:
     build:
