@@ -14,7 +14,7 @@
                 "login": "seller",
                 "password": "password",
                 "photo_url": "public/img/no_photo.png",
-                "role": "seller",
+                "role": "master",
                 "status": "active",
                 "updated_at": "2025-04-21T19:34:17.026000000"
             }
