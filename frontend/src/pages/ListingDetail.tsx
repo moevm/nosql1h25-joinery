@@ -1,14 +1,44 @@
+
 import { useParams, Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import Comments from '@/components/Comments';
 import { useApp } from '@/hooks/useApp';
+import { Comment } from '@/types';
+import { apiService } from '@/services/api';
 
 const ListingDetail = () => {
   const { id } = useParams<{ id: string }>();
-  const { listings, comments, user } = useApp();
+  const { listings, user } = useApp();
+  const [listingComments, setListingComments] = useState<Comment[]>([]);
   
   const listing = listings.find(item => item.id === id);
-  const listingComments = comments.filter(comment => comment.listingId === id);
+
+  useEffect(() => {
+    const loadComments = async () => {
+      if (id) {
+        try {
+          // Extract masterId and number from listingId
+          const [masterId, numberStr] = id.split('_');
+          const number = parseInt(numberStr);
+          
+          console.log(`Initial loading of comments for listing ${masterId}/${number}`);
+          const comments = await apiService.getListingComments(masterId, number);
+          setListingComments(comments);
+        } catch (error) {
+          console.error('Error loading comments:', error);
+        }
+      }
+    };
+
+    // Load comments when the component mounts or the ID changes
+    loadComments();
+
+    // Cleanup function to reset comments when component unmounts or ID changes
+    return () => {
+      setListingComments([]);
+    };
+  }, [id]);
 
   if (!listing) {
     return (

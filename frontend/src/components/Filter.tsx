@@ -1,7 +1,9 @@
-import { useState } from 'react';
+
+import { useState, useEffect } from 'react';
 
 interface FilterProps {
   onApplyFilter: (filters: FilterValues) => void;
+  initialFilters?: FilterValues;
 }
 
 export interface FilterValues {
@@ -18,18 +20,27 @@ export interface FilterValues {
 
 type RangeFilterKey = 'width' | 'height' | 'length' | 'weight' | 'quantity' | 'price';
 
-const Filter = ({ onApplyFilter }: FilterProps) => {
-  const [filters, setFilters] = useState<FilterValues>({
-    title: '',
-    master: '',
-    width: { min: '', max: '' },
-    height: { min: '', max: '' },
-    length: { min: '', max: '' },
-    weight: { min: '', max: '' },
-    quantity: { min: '', max: '' },
-    price: { min: '', max: '' },
-    address: '',
-  });
+const defaultFilters: FilterValues = {
+  title: '',
+  master: '',
+  width: { min: '', max: '' },
+  height: { min: '', max: '' },
+  length: { min: '', max: '' },
+  weight: { min: '', max: '' },
+  quantity: { min: '', max: '' },
+  price: { min: '', max: '' },
+  address: '',
+};
+
+const Filter = ({ onApplyFilter, initialFilters }: FilterProps) => {
+  const [filters, setFilters] = useState<FilterValues>(initialFilters || defaultFilters);
+  
+  // Обновляем фильтры при изменении initialFilters
+  useEffect(() => {
+    if (initialFilters) {
+      setFilters(initialFilters);
+    }
+  }, [initialFilters]);
 
   const handleChange = (name: string, value: string) => {
     if (name.includes('.')) {

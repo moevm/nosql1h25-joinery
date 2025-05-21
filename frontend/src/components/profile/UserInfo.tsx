@@ -1,5 +1,6 @@
+
 import React from 'react';
-import { User } from '@/types';
+import { User, Review } from '@/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Link } from 'react-router-dom';
 import { useApp } from '@/hooks/useApp';
@@ -7,10 +8,22 @@ import { useApp } from '@/hooks/useApp';
 interface UserInfoProps {
   profileUser: User;
   formatDate: (dateString: string) => string;
+  reviews: Review[];
 }
 
-const UserInfo = ({ profileUser, formatDate }: UserInfoProps) => {
+const UserInfo = ({ profileUser, formatDate, reviews }: UserInfoProps) => {
   const { user: currentUser } = useApp();
+  
+  // Рассчитываем средний рейтинг на основе отзывов
+  const calculateAverageRating = (reviews: Review[]): number => {
+    if (reviews.length === 0) return 0;
+    
+    const sum = reviews.reduce((acc, review) => acc + review.rating, 0);
+    return sum / reviews.length;
+  };
+  
+  // Получаем средний рейтинг
+  const averageRating = calculateAverageRating(reviews);
   
   // Check if the current user is logged in and is an admin
   const isCurrentUserAdmin = currentUser && currentUser.userType === 'Админ';
@@ -42,7 +55,7 @@ const UserInfo = ({ profileUser, formatDate }: UserInfoProps) => {
         
         <div>
           <p className="font-bold mb-2">Рейтинг профиля</p>
-          <p className="text-4xl">{profileUser.rating?.toFixed(1)}</p>
+          <p className="text-4xl">{averageRating.toFixed(1)}</p>
         </div>
       </div>
       
@@ -62,7 +75,7 @@ const UserInfo = ({ profileUser, formatDate }: UserInfoProps) => {
       {profileUser.userType === 'Продавец' && (
         <div className="mt-6">
           <Link 
-            to="/" 
+            to={`/?master=${encodeURIComponent(profileUser.fullName)}`}
             className="block text-center border border-black py-2 px-4 hover:bg-gray-100 transition-colors"
           >
             Все объявления

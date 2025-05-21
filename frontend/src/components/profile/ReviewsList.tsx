@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Review, User } from '@/types';
 import ReviewItem from './ReviewItem';
@@ -14,11 +15,14 @@ interface ReviewsListProps {
 const ReviewsList = ({ reviews, currentUser, profileUser, addReview }: ReviewsListProps) => {
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [reviewText, setReviewText] = useState('');
+  const [rating, setRating] = useState(5);
 
   const handleAddReview = () => {
-    if (reviewText.trim() && profileUser.id) {
-      addReview(profileUser.id, reviewText, 5.0);
+    if (reviewText.trim() && profileUser.id && rating > 0) {
+      console.log(`Sending review to user ${profileUser.id}, rating: ${rating}`);
+      addReview(profileUser.id, reviewText, rating);
       setReviewText('');
+      setRating(5);
       setShowReviewForm(false);
     }
   };
@@ -53,6 +57,8 @@ const ReviewsList = ({ reviews, currentUser, profileUser, addReview }: ReviewsLi
         <ReviewForm 
           reviewText={reviewText}
           setReviewText={setReviewText}
+          rating={rating}
+          setRating={setRating}
           onCancel={() => setShowReviewForm(false)}
           onSubmit={handleAddReview}
         />

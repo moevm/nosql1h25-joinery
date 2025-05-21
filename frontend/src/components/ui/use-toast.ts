@@ -1,3 +1,3 @@
-import { useToast as useToastOriginal } from "@/hooks/use-toast"
+import { useToast, toast } from "@/hooks/use-toast";
 
-export const useToast = useToastOriginal 
+export { useToast, toast };

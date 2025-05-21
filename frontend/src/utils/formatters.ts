@@ -1,3 +1,7 @@
+
+/**
+ * Format date from YYYY-MM-DD to DD.MM.YYYY
+ */
 export const formatDate = (dateString: string): string => {
   if (!dateString) return '';
   const parts = dateString.split('-');

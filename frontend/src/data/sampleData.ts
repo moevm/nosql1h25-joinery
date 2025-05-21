@@ -1,3 +1,4 @@
+
 import { ListingItem, Comment, User, Review } from '@/types';
 
 export const sampleListings: ListingItem[] = [
@@ -14,7 +15,7 @@ export const sampleListings: ListingItem[] = [
     price: 50000,
     address: 'Мытищи',
     description: 'Самые качественные опилки из сосны, растущей в Карелии.',
-    imageUrl: '/images/default-listing.png',
+    imageUrl: '/lovable-uploads/acaffa7b-bc52-4650-991b-6b34f30621b2.png',
     createdAt: '2005-03-09T00:00:00Z',
     updatedAt: '2024-03-09T00:00:00Z',
   },
@@ -31,7 +32,7 @@ export const sampleListings: ListingItem[] = [
     price: 50000,
     address: 'Мытищи',
     description: 'Самые качественные опилки из сосны, растущей в Карелии.',
-    imageUrl: '/images/default-listing.png',
+    imageUrl: '/lovable-uploads/acaffa7b-bc52-4650-991b-6b34f30621b2.png',
     createdAt: '2005-03-09T00:00:00Z',
     updatedAt: '2024-03-09T00:00:00Z',
   },
@@ -69,7 +70,7 @@ export const sampleUsers: User[] = [
     rating: 4.5,
     registrationDate: '2015-03-02',
     lastUpdate: '2025-03-02',
-    image: '/images/default-user.png',
+    image: '/lovable-uploads/433b24a4-bbe3-4ae7-99f7-8454fe456edb.png',
   },
   {
     id: '2',
@@ -82,7 +83,7 @@ export const sampleUsers: User[] = [
     rating: 4.0,
     registrationDate: '2015-03-02',
     lastUpdate: '2025-03-02',
-    image: '/images/default-user.png',
+    image: '/lovable-uploads/67bb999f-055c-4b93-bf96-99728275c859.png',
   },
   {
     id: '3',
@@ -95,7 +96,7 @@ export const sampleUsers: User[] = [
     rating: 4.2,
     registrationDate: '2015-03-02',
     lastUpdate: '2025-03-02',
-    image: '/images/default-user.png',
+    image: '/lovable-uploads/c3c2ebca-062a-42df-92ad-6db126fa936e.png',
   },
 ];
 

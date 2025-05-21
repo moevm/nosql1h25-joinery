@@ -1,83 +1,63 @@
-import { useState } from 'react';
+
+import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import Header from '@/components/Header';
 import Filter, { FilterValues } from '@/components/Filter';
 import ListingCard from '@/components/ListingCard';
 import { useApp } from '@/hooks/useApp';
+import { ListingItem } from '@/types';
 
 const Home = () => {
-  const { listings } = useApp();
-  const [filteredListings, setFilteredListings] = useState(listings);
+  const { listings, loading, fetchListings } = useApp();
+  const [filteredListings, setFilteredListings] = useState<ListingItem[]>([]);
   const [sortOption, setSortOption] = useState('price');
+  const [filters, setFilters] = useState<FilterValues>({
+    title: '',
+    master: '',
+    width: { min: '', max: '' },
+    height: { min: '', max: '' },
+    length: { min: '', max: '' },
+    weight: { min: '', max: '' },
+    quantity: { min: '', max: '' },
+    price: { min: '', max: '' },
+    address: '',
+  });
+  
+  // Получаем параметры запроса из URL
+  const location = useLocation();
+  
+  // Извлекаем параметр master из URL при загрузке страницы
+  useEffect(() => {
+    const queryParams = new URLSearchParams(location.search);
+    const masterParam = queryParams.get('master');
+    
+    if (masterParam) {
+      // Обновляем фильтры с учетом параметра master из URL
+      const updatedFilters = {
+        ...filters,
+        master: masterParam
+      };
+      
+      setFilters(updatedFilters);
+      
+      // Применяем фильтр
+      fetchListings(updatedFilters);
+    } else {
+      // Если параметров нет, загружаем все объявления
+      fetchListings(filters);
+    }
+  }, [location.search]);
 
-  const handleApplyFilter = (filters: FilterValues) => {
-    const filtered = listings.filter(listing => {
-      // Фильтрация по названию
-      if (filters.title && !listing.title.toLowerCase().includes(filters.title.toLowerCase())) {
-        return false;
-      }
+  // При загрузке компонента и изменении списка объявлений обновляем отфильтрованный список
+  useEffect(() => {
+    setFilteredListings(listings);
+  }, [listings]);
 
-      // Фильтрация по мастеру
-      if (filters.master && !listing.masterName.toLowerCase().includes(filters.master.toLowerCase())) {
-        return false;
-      }
-
-      // Фильтрация по ширине
-      if (filters.width.min && listing.width < parseInt(filters.width.min)) {
-        return false;
-      }
-      if (filters.width.max && listing.width > parseInt(filters.width.max)) {
-        return false;
-      }
-
-      // Фильтрация по высоте
-      if (filters.height.min && listing.height < parseInt(filters.height.min)) {
-        return false;
-      }
-      if (filters.height.max && listing.height > parseInt(filters.height.max)) {
-        return false;
-      }
-
-      // Фильтрация по длине
-      if (filters.length.min && listing.length < parseInt(filters.length.min)) {
-        return false;
-      }
-      if (filters.length.max && listing.length > parseInt(filters.length.max)) {
-        return false;
-      }
-
-      // Фильтрация по весу
-      if (filters.weight.min && listing.weight < parseInt(filters.weight.min)) {
-        return false;
-      }
-      if (filters.weight.max && listing.weight > parseInt(filters.weight.max)) {
-        return false;
-      }
-
-      // Фильтрация по количеству
-      if (filters.quantity.min && listing.quantity < parseInt(filters.quantity.min)) {
-        return false;
-      }
-      if (filters.quantity.max && listing.quantity > parseInt(filters.quantity.max)) {
-        return false;
-      }
-
-      // Фильтрация по цене
-      if (filters.price.min && listing.price < parseInt(filters.price.min)) {
-        return false;
-      }
-      if (filters.price.max && listing.price > parseInt(filters.price.max)) {
-        return false;
-      }
-
-      // Фильтрация по адресу
-      if (filters.address && !listing.address.toLowerCase().includes(filters.address.toLowerCase())) {
-        return false;
-      }
-
-      return true;
-    });
-
-    setFilteredListings(filtered);
+  const handleApplyFilter = (newFilters: FilterValues) => {
+    // Сохраняем новые фильтры
+    setFilters(newFilters);
+    // Отправляем запрос на сервер с фильтрами
+    fetchListings(newFilters);
   };
 
   const sortListings = (option: string) => {
@@ -105,7 +85,7 @@ const Home = () => {
       <div className="container mx-auto p-4">
         <div className="flex flex-wrap">
           <div className="w-full md:w-1/3 px-4">
-            <Filter onApplyFilter={handleApplyFilter} />
+            <Filter onApplyFilter={handleApplyFilter} initialFilters={filters} />
           </div>
           <div className="w-full md:w-2/3 px-4">
             <div className="flex justify-between items-center mb-4">
@@ -124,11 +104,17 @@ const Home = () => {
               </div>
             </div>
             
-            <div>
-              {filteredListings.map(listing => (
-                <ListingCard key={listing.id} listing={listing} />
-              ))}
-            </div>
+            {loading ? (
+              <div className="text-center py-10">Загрузка объявлений...</div>
+            ) : filteredListings.length > 0 ? (
+              <div>
+                {filteredListings.map(listing => (
+                  <ListingCard key={listing.id} listing={listing} />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-10">Нет доступных объявлений</div>
+            )}
           </div>
         </div>
       </div>

@@ -1,12 +1,16 @@
+
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useApp } from '@/hooks/useApp';
+import { useToast } from '@/components/ui/use-toast';
 
 const Login = () => {
   const navigate = useNavigate();
-  const { login, user } = useApp();
+  const { login, user, loading } = useApp();
+  const { toast } = useToast();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -14,9 +18,22 @@ const Login = () => {
     }
   }, [user, navigate]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    login(username, password);
+    setIsSubmitting(true);
+    
+    try {
+      await login(username, password);
+      // Если успешно, нас перенаправит на главную страницу благодаря эффекту выше
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: 'Ошибка входа',
+        description: 'Неверный логин или пароль. Попробуйте еще раз.',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -40,6 +57,7 @@ const Login = () => {
               onChange={(e) => setUsername(e.target.value)}
               className="w-full border border-black p-3"
               required
+              disabled={isSubmitting || loading}
             />
           </div>
           
@@ -52,14 +70,16 @@ const Login = () => {
               onChange={(e) => setPassword(e.target.value)}
               className="w-full border border-black p-3"
               required
+              disabled={isSubmitting || loading}
             />
           </div>
           
           <button
             type="submit"
             className="w-full border border-black p-3 text-xl font-medium mt-4"
+            disabled={isSubmitting || loading}
           >
-            Войти
+            {(isSubmitting || loading) ? 'Вход...' : 'Войти'}
           </button>
         </form>
         

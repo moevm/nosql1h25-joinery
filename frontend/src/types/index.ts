@@ -1,3 +1,5 @@
+
+// User types
 export interface User {
   id: string;
   fullName: string;
@@ -13,6 +15,7 @@ export interface User {
   image?: string;
 }
 
+// Listing types
 export interface ListingItem {
   id: string;
   title: string;
@@ -31,6 +34,7 @@ export interface ListingItem {
   updatedAt: string;
 }
 
+// Comment types
 export interface Comment {
   id: string;
   listingId: string;
@@ -40,6 +44,7 @@ export interface Comment {
   createdAt: string;
 }
 
+// Review types
 export interface Review {
   id: string;
   userId: string;

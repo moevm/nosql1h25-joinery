@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -8,6 +9,7 @@ import DescriptionInput from '@/components/listings/DescriptionInput';
 import ListingMetadata from '@/components/listings/ListingMetadata';
 import ImageUploader from '@/components/listings/ImageUploader';
 import FormActions from '@/components/listings/FormActions';
+import { toast } from '@/components/ui/use-toast';
 
 const ListingForm = () => {
   const { id } = useParams<{ id: string }>();
@@ -26,7 +28,7 @@ const ListingForm = () => {
   const [price, setPrice] = useState(listing?.price?.toString() || '');
   const [address, setAddress] = useState(listing?.address || '');
   const [description, setDescription] = useState(listing?.description || '');
-  const [image, setImage] = useState(listing?.imageUrl || '/images/default-listing.png');
+  const [image, setImage] = useState(listing?.imageUrl || '');
   
   useEffect(() => {
     if (isEdit && !user) {
@@ -41,14 +43,32 @@ const ListingForm = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!title) {
+      toast({
+        title: "Ошибка",
+        description: "Название объявления обязательно",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    if (!image) {
+      toast({
+        title: "Ошибка",
+        description: "Добавьте изображение к объявлению",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     const listingData = {
       title,
-      width: parseInt(width),
-      height: parseInt(height),
-      length: parseInt(length),
-      weight: parseInt(weight),
-      quantity: parseInt(quantity),
-      price: parseInt(price),
+      width: parseInt(width) || 0,
+      height: parseInt(height) || 0,
+      length: parseInt(length) || 0,
+      weight: parseInt(weight) || 0,
+      quantity: parseInt(quantity) || 0,
+      price: parseInt(price) || 0,
       address,
       description,
       imageUrl: image,
@@ -56,9 +76,17 @@ const ListingForm = () => {
     
     if (isEdit && id) {
       updateListing(id, listingData);
+      toast({
+        title: "Успешно",
+        description: "Объявление обновлено"
+      });
       navigate(`/listing/${id}`);
     } else {
       createListing(listingData);
+      toast({
+        title: "Успешно",
+        description: "Объявление создано"
+      });
       navigate('/');
     }
   };
@@ -113,7 +141,14 @@ const ListingForm = () => {
             />
           </div>
           
-          <ImageUploader setImage={setImage} />
+          <div className="mb-10">
+            <h3 className="text-lg font-semibold mb-4">Фото объявления</h3>
+            <ImageUploader 
+              setImage={setImage} 
+              currentImage={image}
+              label="Загрузите изображение или укажите ссылку"
+            />
+          </div>
           
           <FormActions isEdit={isEdit} handleDelete={handleDelete} />
         </form>
