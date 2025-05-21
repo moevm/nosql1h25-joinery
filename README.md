@@ -9,6 +9,7 @@
           docker-compose up --build
 
   Отладочные пользователи:
+  
   Администратор
           
     - login - admin
