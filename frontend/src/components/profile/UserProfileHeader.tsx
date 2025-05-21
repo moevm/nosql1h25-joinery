@@ -18,7 +18,6 @@ const UserProfileHeader = ({
   // Определяем тип пользователя для отображения
   const displayUserType = userType === 'master' ? 'Продавец' : userType;
   
-  // Check if the user is a seller/master type that can create listings
   const canCreateListings = userType === 'Продавец' || userType === 'master';
   
   return (
