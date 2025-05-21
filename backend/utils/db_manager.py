@@ -4,6 +4,15 @@ from .db_main import DatabaseConnection
 class DatabaseManager(DatabaseConnection):
     '''База данных для сервиса по купле/продаже остатков производства'''
 
+    def is_empty(self) -> bool:
+        with self.driver.session() as session:
+            nodes = session.execute_read(
+                lambda tx: tx.run(
+                    'MATCH (n) RETURN n'
+                ).data()
+            )
+        return len(nodes) == 0
+
     def get_user(self, login: str) -> dict:
         '''Получение пользователя по его логину'''
         with self.driver.session() as session:

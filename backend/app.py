@@ -2,12 +2,18 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 
 from utils.db_manager import DatabaseManager
+from utils.db_backup import DatabaseImporter, DatabaseExporter
 from utils.utils import convert
 
 
 app = Flask(__name__)
 CORS(app)
 db = DatabaseManager()
+# Загрузка бэкапа, если БД пустая
+if db.is_empty():
+    importer = DatabaseImporter()
+    importer.import_data('data.json')
+    del importer
 
 
 # Проверочная страница
@@ -204,6 +210,28 @@ def login():
         }), 200
     else:
         return jsonify({'error': 'Неверный логин или пароль'}), 401
+
+
+# Сохранение бэкапа БД
+@app.route('/api/backup/', methods=['GET'])
+def get_backup():
+    data = {}
+    exporter = DatabaseExporter()
+    data = exporter.get_graph_data()
+    return jsonify(convert(data))
+
+
+# Загрузка бэкапа БД
+@app.route('/api/backup/', methods=['POST'])
+def set_backup():
+    data = request.get_json()
+    backup_data = data.get('backup_data')
+    if backup_data == None:
+        return jsonify({'error': 'Не переданны данные'}), 400
+    
+    importer = DatabaseImporter()
+    importer.set_graph_data(backup_data)
+    return jsonify({'message': 'OK'}), 201
 
 
 

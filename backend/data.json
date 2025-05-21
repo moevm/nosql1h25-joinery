@@ -1,0 +1,121 @@
+{
+  "nodes": [
+    {
+      "id": 0,
+      "labels": [
+        "User"
+      ],
+      "properties": {
+        "updated_at": "2025-04-21T19:34:17.026000000+00:00",
+        "status": "active",
+        "description": "",
+        "photo_url": "public/img/no_photo.png",
+        "age": 27,
+        "role": "seller",
+        "created_at": "2025-04-21T19:34:17.026000000+00:00",
+        "login": "seller",
+        "education": "ETU \"LETI\"",
+        "password": "pwd12345",
+        "full_name": "Гарри Гудини"
+      }
+    },
+    {
+      "id": 1,
+      "labels": [
+        "Announcement"
+      ],
+      "properties": {
+        "amount": 100,
+        "updated_at": "2025-04-21T19:34:17.070000000+00:00",
+        "price": 2000,
+        "weight": 2.5,
+        "height": 1.0,
+        "address": "Москва",
+        "description": "Отличные опилки",
+        "photo_url": "public/img/no_photo.png",
+        "name": "Опилки",
+        "width": 1.1,
+        "length": 1.2,
+        "created_at": "2025-04-21T19:34:17.070000000+00:00"
+      }
+    },
+    {
+      "id": 2,
+      "labels": [
+        "User"
+      ],
+      "properties": {
+        "updated_at": "2025-04-21T19:34:16.971000000+00:00",
+        "status": "active",
+        "description": "",
+        "photo_url": "public/img/no_photo.png",
+        "age": 18,
+        "role": "buyer",
+        "created_at": "2025-04-21T19:34:16.971000000+00:00",
+        "login": "buyer",
+        "education": "ETU \"LETI\"",
+        "password": "password",
+        "full_name": "Джон Уик"
+      }
+    },
+    {
+      "id": 3,
+      "labels": [
+        "Feedback"
+      ],
+      "properties": {
+        "text": "Достаточно неплохой мастер"
+      }
+    },
+    {
+      "id": 5,
+      "labels": [
+        "Feedback"
+      ],
+      "properties": {
+        "text": "К данным опилкам присматриваться не советовал бы"
+      }
+    }
+  ],
+  "relationships": [
+    {
+      "id": 6917529027641081857,
+      "type": "Create",
+      "start_node": 0,
+      "end_node": 1,
+      "properties": {
+        "number": 1
+      }
+    },
+    {
+      "id": 6917530127152709635,
+      "type": "Make",
+      "start_node": 2,
+      "end_node": 3,
+      "properties": {}
+    },
+    {
+      "id": 6917530127152709637,
+      "type": "Make",
+      "start_node": 2,
+      "end_node": 5,
+      "properties": {}
+    },
+    {
+      "id": 1152923703630102531,
+      "type": "About",
+      "start_node": 3,
+      "end_node": 0,
+      "properties": {
+        "estimation": 5
+      }
+    },
+    {
+      "id": 1152923703630102533,
+      "type": "About",
+      "start_node": 5,
+      "end_node": 1,
+      "properties": {}
+    }
+  ]
+}

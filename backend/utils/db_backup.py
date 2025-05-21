@@ -1,7 +1,7 @@
 import json
 
 from .db_main import DatabaseConnection
-from .utils import convert
+from .utils import convert, back_convert
 
 
 class DatabaseExporter(DatabaseConnection):
@@ -9,7 +9,7 @@ class DatabaseExporter(DatabaseConnection):
 
     def export_data_to_json(self, output_file: str = 'neo4j_export.json') -> None:
         '''Экспорт БД в файл'''
-        graph_data = self.get_graph_data()
+        graph_data = convert(self.get_graph_data())
         with open(output_file, 'w', encoding='utf-8') as f:
             json.dump(graph_data, f, indent=2, ensure_ascii=False)
     
@@ -17,7 +17,7 @@ class DatabaseExporter(DatabaseConnection):
     def get_graph_data(self) -> dict:
         '''Получение всех данных из базы данных'''
         with self.driver.session() as session:
-            graph_data = convert(session.execute_read(self._export_graph))
+            graph_data = session.execute_read(self._export_graph)
         return graph_data
 
 
@@ -71,7 +71,7 @@ class DatabaseImporter(DatabaseConnection):
         '''Импорт из файла данных для БД'''
         with open(input_file, 'r', encoding='utf-8') as f:
             graph_data = json.load(f)
-        self.set_graph_data(graph_data)
+        self.set_graph_data(back_convert(graph_data))
     
 
     def set_graph_data(self, graph_data: dict):
@@ -81,6 +81,10 @@ class DatabaseImporter(DatabaseConnection):
 
     
     def _import_graph(self, tx, graph_data):
+        # Удаление предыдущих данных
+        tx.run('MATCH ()-[e]->() DELETE e')
+        tx.run('MATCH (n) DELETE n')
+
         # Создание всех узлов
         for node in graph_data.get('nodes', []):
             node_id = node.get('id')
@@ -113,5 +117,8 @@ class DatabaseImporter(DatabaseConnection):
 
 
 if __name__ == '__main__':
-    exporter = DatabaseExporter()
-    print(exporter.get_graph_data())
+    #exporter = DatabaseExporter()
+    #print(exporter.get_graph_data())
+    #exporter.export_data_to_json('data.json')
+    importer = DatabaseImporter()
+    importer.import_data('data.json')

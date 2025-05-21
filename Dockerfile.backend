@@ -3,7 +3,7 @@ FROM python:3.11-slim
 WORKDIR /app
 
 # Сначала скопируем requirements.txt
-COPY backend/utils/requirements.txt .
+COPY backend/requirements.txt .
 
 # Установим зависимости
 RUN pip install --no-cache-dir -r requirements.txt
