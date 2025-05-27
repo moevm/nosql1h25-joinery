@@ -313,6 +313,27 @@ class DatabaseManager(DatabaseConnection):
         return True
 
 
+    def delete_user_feedback(self,
+            sender_login: str,
+            recipient_login: str
+    ) -> bool:
+        '''Удаление отзыва о пользователе'''
+        if self.get_feedback_user_user(sender_login, recipient_login) is None:
+            return False
+        with self.driver.session() as session:
+            session.execute_write(
+                lambda tx: tx.run(
+                    '''MATCH (:User {login: $login1})
+                             -[:Make]->(f:Feedback)-[:About]->
+                             (:User {login: $login2})
+                        DETACH DELETE f''',
+                    login1=sender_login,
+                    login2=recipient_login
+                )
+            )
+        return True
+
+
     def create_announcement_feedback(self,
             sender_login: str,
             master_login: str,
