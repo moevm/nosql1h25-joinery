@@ -223,6 +223,34 @@ class DatabaseManager(DatabaseConnection):
         return [{**record['a'], 'master': record['master'], 'number': record['number']} for record in announcements]
 
 
+    def edit_announcement(self, 
+            login: str, number: int,
+            name: str, width: float, height: float, length: float,
+            weight: float, amount: int, price: float, address: str,
+            description: str = '', photo_url: str = 'no_photo.png'
+    ) -> bool:
+        '''Редактирование существубщего объявления'''
+        # Проверка пользователя на существование
+        if not self.get_announcement(login, number):
+            return False
+        with self.driver.session() as session:
+            session.execute_write(
+                lambda tx: tx.run(
+                    '''MATCH (:User {login: $login})-[:Create {number: $number}]->(a:Announcement)
+                       SET a.name = $name, a.width = $width, a.height = $height, 
+                           a.length = $length, a.weight = $weight, a.amount = $amount, 
+                           a.price = $price, a.updated_at = datetime(), a.address = $address, 
+                           a.description = $description, a.photo_url = $photo_url''',
+                    login=login, number=number, name=name, 
+                    width=width, height=height, length=length, 
+                    weight=weight, amount=amount, price=price, 
+                    address=address, description=description,
+                    photo_url=photo_url
+                )
+            )
+        return True
+
+
     def create_user_feedback(self,
             sender_login: str,
             recipient_login: str,
