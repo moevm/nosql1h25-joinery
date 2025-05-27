@@ -104,6 +104,21 @@ class DatabaseManager(DatabaseConnection):
                 )
             )
         return True
+
+
+     def set_user_status(self, login: str, new_status: str):
+        '''Блокировка и разблокировка пользователя'''
+        if not self.user_exists(login):
+            return False
+        with self.driver.session() as session:
+            session.execute_write(
+                lambda tx: tx.run(
+                    '''MATCH (u:User {login: $login}) 
+                       SET u.status = $status''',
+                    login=login, status=new_status
+                )
+            )
+        return True
     
 
     def get_announcement_max_number(self, login: str) -> int:
