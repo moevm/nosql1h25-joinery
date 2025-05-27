@@ -267,6 +267,25 @@ class DatabaseManager(DatabaseConnection):
         return True
 
 
+    def get_feedback_user_user(self,
+            sender_login: str,
+            recipient_login: str
+    ) -> dict:
+        '''Получение отзыва о пользователе'''
+        with self.driver.session() as session:
+            feedback = session.execute_read(
+                lambda tx: tx.run(
+                    '''MATCH (:User {login: $login1})
+                             -[:Make]->(f:Feedback)-[a:About]->
+                             (:User {login: $login2})
+                    RETURN f, a''',
+                    login1=sender_login,
+                    login2=recipient_login
+                ).single()
+            )
+        return {**feedback['f'], **feedback['a']} if feedback else None
+
+
     def create_user_feedback(self,
             sender_login: str,
             recipient_login: str,
