@@ -251,6 +251,22 @@ class DatabaseManager(DatabaseConnection):
         return True
 
 
+    def delete_announcement_with_comments(self, login: str, number: int) -> bool:
+        '''Удаление объявления'''
+        if not self.get_announcement(login, number):
+            return False
+        with self.driver.session() as session:
+            session.execute_write(
+                lambda tx: tx.run(
+                    '''MATCH (:User {login: $login})-[:Create {number: $number}]->(a:Announcement)
+                       MATCH (:User)-[:Make]->(f:Feedback)-[:About]->(a)
+                       DETACH DELETE a, f''',
+                    login=login, number=number
+                )
+            )
+        return True
+
+
     def create_user_feedback(self,
             sender_login: str,
             recipient_login: str,
