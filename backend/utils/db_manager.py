@@ -334,6 +334,28 @@ class DatabaseManager(DatabaseConnection):
         return True
 
 
+    def get_feedback_user_announcement(self,
+            sender_login: str,
+            master_login: str,
+            number: int
+    ) -> bool:
+        '''Получение отзыва об объявлении'''
+        with self.driver.session() as session:
+            feedback = session.execute_read(
+                lambda tx: tx.run(
+                    '''MATCH (:User {login: $login1})-[:Create {number: $number}]->(a:Announcement)
+                       MATCH (:User {login: $login2})
+                             -[:Make]->(f:Feedback)-[:About]->
+                             (a)
+                       RETURN f, a''',
+                    login1=master_login,
+                    number=number,
+                    login2=sender_login
+                ).single()
+            )
+        return dict(feedback['f']) if feedback else None
+
+
     def create_announcement_feedback(self,
             sender_login: str,
             master_login: str,
