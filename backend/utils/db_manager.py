@@ -5,6 +5,7 @@ class DatabaseManager(DatabaseConnection):
     '''База данных для сервиса по купле/продаже остатков производства'''
 
     def is_empty(self) -> bool:
+        '''Проверка базы данных на отсутствие в ней каких-либо элементов'''
         with self.driver.session() as session:
             nodes = session.execute_read(
                 lambda tx: tx.run(
@@ -13,6 +14,7 @@ class DatabaseManager(DatabaseConnection):
             )
         return len(nodes) == 0
 
+    
     def get_user(self, login: str) -> dict:
         '''Получение пользователя по его логину'''
         with self.driver.session() as session:
@@ -77,6 +79,32 @@ class DatabaseManager(DatabaseConnection):
             )
         return True
 
+
+    def edit_user(self,
+            login: str, full_name: str, age: int, 
+            description: str, education: str, photo_url: str
+    ) -> bool:
+        '''Редактирование существующего пользователя в БД'''
+        # Проверка на существование пользователя с таким логином
+        if not self.user_exists(login):
+            return False
+        with self.driver.session() as session:
+            session.execute_write(
+                lambda tx: tx.run(
+                    '''MATCH (u:User {login: $login}) 
+                       SET u.full_name = $full_name, 
+                           u.age = $age,
+                           u.updated_at = datetime(),
+                           u.description = $description, 
+                           u.education = $education, 
+                           u.photo_url = $photo_url''',
+                    login=login, full_name=full_name, age=age, 
+                    description=description, education=education,
+                    photo_url=photo_url
+                )
+            )
+        return True
+    
 
     def get_announcement_max_number(self, login: str) -> int:
         '''Возвращает максимальный номер объявления пользователя'''
