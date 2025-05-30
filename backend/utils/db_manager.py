@@ -106,7 +106,7 @@ class DatabaseManager(DatabaseConnection):
         return True
 
 
-     def set_user_status(self, login: str, new_status: str):
+    def set_user_status(self, login: str, new_status: str):
         '''Блокировка и разблокировка пользователя'''
         if not self.user_exists(login):
             return False
@@ -227,7 +227,7 @@ class DatabaseManager(DatabaseConnection):
             login: str, number: int,
             name: str, width: float, height: float, length: float,
             weight: float, amount: int, price: float, address: str,
-            description: str = '', photo_url: str = 'no_photo.png'
+            description, photo_url
     ) -> bool:
         '''Редактирование существубщего объявления'''
         # Проверка пользователя на существование
@@ -251,7 +251,7 @@ class DatabaseManager(DatabaseConnection):
         return True
 
 
-    def delete_announcement_with_comments(self, login: str, number: int) -> bool:
+    def delete_announcement(self, login: str, number: int) -> bool:
         '''Удаление объявления'''
         if not self.get_announcement(login, number):
             return False
@@ -259,8 +259,7 @@ class DatabaseManager(DatabaseConnection):
             session.execute_write(
                 lambda tx: tx.run(
                     '''MATCH (:User {login: $login})-[:Create {number: $number}]->(a:Announcement)
-                       MATCH (:User)-[:Make]->(f:Feedback)-[:About]->(a)
-                       DETACH DELETE a, f''',
+                       DETACH DELETE a''',
                     login=login, number=number
                 )
             )

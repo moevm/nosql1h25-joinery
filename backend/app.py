@@ -62,7 +62,7 @@ def get_user(login):
 def get_user_feedback(login):
     feedback = db.get_user_feedback(login)
 
-    if feedback:
+    if feedback is not None:
         return jsonify(feedback)
     return jsonify({'error': 'Пользователь не найден'}), 404
 
@@ -159,8 +159,8 @@ def get_announcement_feedback(login, number):
     number = int(number)
 
     success = db.get_announcement_feedback(login, number)
-
-    if success:
+    
+    if success is not None:
         return jsonify(success)
     return jsonify({'error': 'Объявление не найдено'}), 404
 
@@ -233,6 +233,81 @@ def set_backup():
     importer.set_graph_data(backup_data)
     return jsonify({'message': 'OK'}), 201
 
+
+@app.route('/api/users/<login>/', methods=['PATCH'])
+def update_user(login):
+    data = request.get_json()
+    required_field = ['full_name', 'age', 'description', 'education', 'photo_url']
+    if not data or not all(field in data for field in required_field):
+        return jsonify({'error': 'Не хватает полей'}), 400
+
+    result = db.edit_user(login, data['full_name'], data['age'], data['description'], data['education'], data['photo_url'])
+
+    if result:
+        return jsonify({'message': 'OK'}), 200
+    return jsonify({'error': 'Пользователь не существует'}), 404
+
+
+@app.route('/api/users/<login>/status/', methods=['PATCH'])
+def update_user_status(login):
+    status = request.get_json().get('status')
+    if not status:
+        return jsonify({'error': 'Не хватает поля status'}), 400
+    
+    if db.set_user_status(login, status):
+        return jsonify({'message': 'OK'}), 200
+    return jsonify({'error': 'Пользователь не существует'}), 404
+
+
+@app.route('/api/announcements/<login>/<number>/', methods=['PATCH'])
+def edit_announcement(login, number):
+    if not number.isnumeric():
+        return jsonify({'error': 'Номер объявления некорректный'}), 401
+    number = int(number)
+
+    data = request.get_json()
+    required_field = [
+        'name', 'width', 'height', 'length', 'weight', 'amount', 
+        'price', 'address', 'description', 'photo_url'
+    ]
+    values = []
+    for key in required_field:
+        values.append(data.get(key))
+        if not values[-1]:
+            return jsonify({'error': 'Не хватает полей'}), 400
+    
+    if db.edit_announcement(login, number, *values):
+        return jsonify({'message': 'OK'}), 200
+    return jsonify({'error': 'Объявление не существует'}), 404
+
+
+@app.route('/api/announcements/<login>/<number>/', methods=['DELETE'])
+def delete_announcement(login, number):
+    if not number.isnumeric():
+        return jsonify({'error': 'Номер объявления некорректный'}), 401
+    number = int(number)
+
+    if db.delete_announcement(login, number):
+        return jsonify({'message': 'OK'}), 204
+    return jsonify({'error': 'Объявление не существует'}), 404
+
+
+@app.route('/api/users/<login_user>/comments/<login_author>/', methods=['DELETE'])
+def delete_user_feedback(login_user, login_author):
+    if db.delete_user_feedback(login_author, login_user):
+        return jsonify({'message': 'OK'}), 204
+    return jsonify({'error': 'Отзыв не существует'}), 404
+
+
+@app.route('/api/announcements/<login_master>/<number>/comments/<login_author>/', methods=['DELETE'])
+def delete_announcement_feedback(login_master, number, login_author):
+    if not number.isnumeric():
+        return jsonify({'error': 'Номер объявления некорректный'}), 401
+    number = int(number)
+
+    if db.delete_announcement_feedback(login_author, login_master, number):
+        return jsonify({'message': 'OK'}), 204
+    return jsonify({'error': 'Отзыв не существует'}), 404
 
 
 if __name__ == '__main__':
