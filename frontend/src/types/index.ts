@@ -13,6 +13,7 @@ export interface User {
   registrationDate?: string;
   lastUpdate?: string;
   image?: string;
+  status?: string;
 }
 
 // Listing types
@@ -32,6 +33,7 @@ export interface ListingItem {
   imageUrl: string;
   createdAt: string;
   updatedAt: string;
+  number?: number;
 }
 
 // Comment types
