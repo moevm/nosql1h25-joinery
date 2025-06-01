@@ -97,12 +97,18 @@ const UserInfo = ({ profileUser, formatDate, reviews }: UserInfoProps) => {
       
       {/* Only show admin panel button if current user is an admin */}
       {isCurrentUserAdmin && (
-        <div className="mt-6">
+        <div className="mt-6 space-y-2">
           <Link 
             to="/admin"
             className="block text-center border border-black py-2 px-4 bg-black text-white hover:bg-gray-900 transition-colors"
           >
             Панель админа
+          </Link>
+          <Link 
+            to="/backup-management"
+            className="block text-center border border-black py-2 px-4 bg-gray-800 text-white hover:bg-gray-700 transition-colors"
+          >
+            Управление бэкапами
           </Link>
         </div>
       )}
