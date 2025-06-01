@@ -533,5 +533,45 @@ export const apiService = {
       console.error('Ошибка удаления отзыва:', error);
       throw error;
     }
+  },
+
+  // Получение бэкапа базы данных
+  getBackup: async () => {
+    try {
+      const response = await fetch(`${API_URL}/backup/`);
+      
+      if (!response.ok) {
+        throw new Error('Ошибка получения бэкапа');
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error('Ошибка получения бэкапа:', error);
+      throw error;
+    }
+  },
+
+  // Загрузка бэкапа в базу данных
+  uploadBackup: async (backupData: any) => {
+    try {
+      const response = await fetch(`${API_URL}/backup/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          backup_data: backupData
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Ошибка загрузки бэкапа');
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error('Ошибка загрузки бэкапа:', error);
+      throw error;
+    }
   }
 };
