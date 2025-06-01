@@ -2,12 +2,11 @@ version: '3.8'
 
 services:
   db:
-    image: neo4j:5.19.0  # Указан конкретный тег
+    image: neo4j:5.19.0  
     environment:
       NEO4J_AUTH: neo4j/12345678
     volumes:
       - neo4j_data:/data
-    # Порты не пробрасываются наружу
 
   backend:
     build:
