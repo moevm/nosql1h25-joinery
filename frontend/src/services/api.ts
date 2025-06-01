@@ -4,19 +4,24 @@ const API_URL = 'http://localhost:5000/api';
 
 // Преобразование данных пользователя из API в формат приложения
 const mapUserFromApi = (userData: any): User => {
+  let userType = 'Покупатель';
+  if (userData.role === 'master') userType = 'Продавец';
+  else if (userData.role === 'admin') userType = 'Админ';
+  
   return {
     id: userData.login,
     fullName: userData.full_name,
-    userType: userData.role === 'master' ? 'Продавец' : 'Покупатель',
+    userType,
     login: userData.login,
     isLoggedIn: true,
     bio: userData.description || '',
     age: userData.age,
     education: userData.education || '',
-    rating: 0, // Рейтинг рассчитываем отдельно
+    rating: 0,
     registrationDate: userData.created_at?.split('T')[0] || '',
     lastUpdate: userData.updated_at?.split('T')[0] || '',
     image: userData.photo_url || '',
+    status: userData.status || 'active',
   };
 };
 
@@ -40,21 +45,7 @@ const mapListingFromApi = (listing: any, userMap?: Map<string, User>): ListingIt
     imageUrl: listing.photo_url || '/lovable-uploads/acaffa7b-bc52-4650-991b-6b34f30621b2.png',
     createdAt: listing.created_at || new Date().toISOString(),
     updatedAt: listing.updated_at || new Date().toISOString(),
-  };
-};
-
-// Преобразование отзыва из API в формат приложения
-const mapReviewFromApi = (review: any, userMap?: Map<string, User>): Review => {
-  const authorName = userMap?.get(review.author)?.fullName || review.author;
-  
-  return {
-    id: `${review.author}_${Date.now()}`, // Генерируем уникальный ID
-    userId: review.recipient_login || '', // ID пользователя, о котором отзыв
-    authorId: review.author,
-    authorName: authorName,
-    text: review.text,
-    rating: review.estimation,
-    createdAt: new Date().toISOString(),
+    number: listing.number,
   };
 };
 
@@ -94,19 +85,17 @@ export const apiService = {
     image?: string
   ) => {
     try {
-      // Формируем тело запроса с учетом новых полей
+      let role = 'buyer';
+      if (userType === 'Продавец') role = 'master';
+      else if (userType === 'Админ') role = 'admin';
+      
       const requestBody: Record<string, any> = {
         login,
         password,
-        role: userType === 'Продавец' ? 'master' : 'buyer',
-        full_name: fullName
+        role,
+        full_name: fullName,
+        age: age || 18
       };
-      
-      // Добавляем необязательные поля только если они заданы
-      if (age) requestBody.age = age;
-      if (education) requestBody.education = education;
-      if (description) requestBody.description = description;
-      if (image) requestBody.photo_url = image;
       
       console.log("Отправка данных для регистрации:", requestBody);
       
@@ -147,18 +136,73 @@ export const apiService = {
       throw error;
     }
   },
+
+  // Обновление профиля пользователя
+  updateUserProfile: async (login: string, updates: {
+    fullName?: string;
+    age?: number;
+    bio?: string;
+    education?: string;
+    image?: string;
+  }) => {
+    try {
+      const requestBody: Record<string, any> = {};
+      
+      if (updates.fullName) requestBody.full_name = updates.fullName;
+      if (updates.age) requestBody.age = updates.age;
+      if (updates.bio) requestBody.description = updates.bio;
+      if (updates.education) requestBody.education = updates.education;
+      if (updates.image) requestBody.photo_url = updates.image;
+      
+      const response = await fetch(`${API_URL}/users/${login}/`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Ошибка обновления профиля');
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error('Ошибка обновления профиля:', error);
+      throw error;
+    }
+  },
+
+  // Изменение статуса пользователя (только для админа)
+  updateUserStatus: async (login: string, status: string) => {
+    try {
+      const response = await fetch(`${API_URL}/users/${login}/status/`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Ошибка изменения статуса пользователя');
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error('Ошибка изменения статуса пользователя:', error);
+      throw error;
+    }
+  },
   
   // Получение всех объявлений с фильтрацией
   getListings: async (filters?: any): Promise<ListingItem[]> => {
     try {
-      // Формируем URL с параметрами для GET запроса
       let url = `${API_URL}/announcements/`;
       
-      // Если есть фильтры, добавляем их в URL как query параметры
       if (filters) {
         const params = new URLSearchParams();
         
-        // Преобразуем фильтры в формат, который ожидает API
         if (filters.title) params.append('name', filters.title);
         if (filters.master) params.append('master', filters.master);
         
@@ -182,7 +226,6 @@ export const apiService = {
         
         if (filters.address) params.append('address', filters.address);
         
-        // Добавляем параметры к URL
         url = `${url}?${params.toString()}`;
       }
       
@@ -196,11 +239,9 @@ export const apiService = {
       
       const listings = await response.json();
       
-      // Получаем уникальных мастеров для получения их данных
       const uniqueMasters = new Set(listings.map((listing: any) => listing.master));
       const userMap = new Map<string, User>();
       
-      // Получаем данные каждого мастера
       await Promise.all(Array.from(uniqueMasters).map(async (masterLogin) => {
         try {
           const user = await apiService.getUser(masterLogin as string);
@@ -210,7 +251,6 @@ export const apiService = {
         }
       }));
       
-      // Маппим данные объявлений
       return listings.map((listing: any) => mapListingFromApi(listing, userMap));
     } catch (error) {
       console.error('Ошибка получения объявлений:', error);
@@ -251,6 +291,59 @@ export const apiService = {
       throw error;
     }
   },
+
+  // Обновление объявления
+  updateListing: async (masterId: string, number: number, updates: Partial<ListingItem>) => {
+    try {
+      const requestBody: Record<string, any> = {};
+      
+      if (updates.title) requestBody.name = updates.title;
+      if (updates.width !== undefined) requestBody.width = updates.width;
+      if (updates.height !== undefined) requestBody.height = updates.height;
+      if (updates.length !== undefined) requestBody.length = updates.length;
+      if (updates.weight !== undefined) requestBody.weight = updates.weight;
+      if (updates.quantity !== undefined) requestBody.amount = updates.quantity;
+      if (updates.price !== undefined) requestBody.price = updates.price;
+      if (updates.address) requestBody.address = updates.address;
+      if (updates.description) requestBody.description = updates.description;
+      if (updates.imageUrl) requestBody.photo_url = updates.imageUrl;
+      
+      const response = await fetch(`${API_URL}/announcements/${masterId}/${number}/`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Ошибка обновления объявления');
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error('Ошибка обновления объявления:', error);
+      throw error;
+    }
+  },
+
+  // Удаление объявления
+  deleteListing: async (masterId: string, number: number) => {
+    try {
+      const response = await fetch(`${API_URL}/announcements/${masterId}/${number}/`, {
+        method: 'DELETE',
+      });
+      
+      if (!response.ok) {
+        throw new Error('Ошибка удаления объявления');
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('Ошибка удаления объявления:', error);
+      throw error;
+    }
+  },
   
   // Получение объявления по ID
   getListing: async (masterId: string, number: number): Promise<ListingItem> => {
@@ -280,11 +373,9 @@ export const apiService = {
       
       const comments = await response.json();
       
-      // Получаем уникальных авторов для получения их данных
       const uniqueAuthors = new Set(comments.map((comment: any) => comment.author));
       const userMap = new Map<string, User>();
       
-      // Получаем данные каждого автора
       await Promise.all(Array.from(uniqueAuthors).map(async (authorLogin) => {
         try {
           const user = await apiService.getUser(authorLogin as string);
@@ -294,7 +385,6 @@ export const apiService = {
         }
       }));
       
-      // Маппим комментарии
       return comments.map((comment: any) => ({
         id: `${comment.author}_${Date.now()}`,
         listingId: `${masterId}_${number}`,
@@ -333,6 +423,24 @@ export const apiService = {
       throw error;
     }
   },
+
+  // Удаление комментария к объявлению
+  deleteListingComment: async (masterId: string, number: number, authorLogin: string) => {
+    try {
+      const response = await fetch(`${API_URL}/announcements/${masterId}/${number}/comments/${authorLogin}/`, {
+        method: 'DELETE',
+      });
+      
+      if (!response.ok) {
+        throw new Error('Ошибка удаления комментария');
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('Ошибка удаления комментария:', error);
+      throw error;
+    }
+  },
   
   // Получение отзывов о пользователе
   getUserReviews: async (login: string): Promise<Review[]> => {
@@ -345,17 +453,15 @@ export const apiService = {
       
       const reviews = await response.json();
       
-      // Получаем уникальных авторов для получения их данных
       const uniqueAuthors = new Set(reviews.map((review: any) => review.author));
       const userMap = new Map<string, User>();
       
-      // Получаем данные каждого автора
       await Promise.all(Array.from(uniqueAuthors).map(async (authorLogin) => {
         try {
           const user = await apiService.getUser(authorLogin as string);
           userMap.set(authorLogin as string, user);
         } catch (error) {
-          console.error(`Ошибк�� получения данных автора ${authorLogin}:`, error);
+          console.error(`Ошибка получения данных автора ${authorLogin}:`, error);
         }
       }));
       
@@ -407,6 +513,24 @@ export const apiService = {
       return responseData;
     } catch (error) {
       console.error('Ошибка добавления отзыва:', error);
+      throw error;
+    }
+  },
+
+  // Удаление отзыва о пользователе
+  deleteUserReview: async (userLogin: string, authorLogin: string) => {
+    try {
+      const response = await fetch(`${API_URL}/users/${userLogin}/comments/${authorLogin}/`, {
+        method: 'DELETE',
+      });
+      
+      if (!response.ok) {
+        throw new Error('Ошибка удаления отзыва');
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('Ошибка удаления отзыва:', error);
       throw error;
     }
   }
