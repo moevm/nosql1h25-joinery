@@ -2,21 +2,19 @@ version: '3.8'
 
 services:
   db:
-    image: neo4j:5.19
+    image: neo4j:5.19.0  # Указан конкретный тег
     environment:
       NEO4J_AUTH: neo4j/12345678
-    ports:
-      - "7474:7474"  # Web UI
-      - "7687:7687"  # Bolt
     volumes:
       - neo4j_data:/data
+    # Порты не пробрасываются наружу
 
   backend:
     build:
       context: .
       dockerfile: Dockerfile.backend
     ports:
-      - "5000:5000"
+      - "127.0.0.1:5000:5000"
     depends_on:
       - db
 
@@ -25,7 +23,7 @@ services:
       context: .
       dockerfile: Dockerfile.frontend
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
     depends_on:
       - backend
 
