@@ -62,7 +62,7 @@ const Admin = () => {
     <div className="min-h-screen">
       <Header />
       
-      <div className="container mx-auto p-4">
+      <div className="container mx-auto p-4 hidden">
         <div className="text-center mb-10">
           <h1 className="text-4xl font-bold mb-2">Панель администратора</h1>
           <h2 className="text-2xl">для работы с БД</h2>
