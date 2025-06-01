@@ -40,7 +40,7 @@ const ListingForm = () => {
     }
   }, [isEdit, listing, user, navigate]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!title) {
@@ -74,27 +74,27 @@ const ListingForm = () => {
       imageUrl: image,
     };
     
-    if (isEdit && id) {
-      updateListing(id, listingData);
-      toast({
-        title: "Успешно",
-        description: "Объявление обновлено"
-      });
-      navigate(`/listing/${id}`);
-    } else {
-      createListing(listingData);
-      toast({
-        title: "Успешно",
-        description: "Объявление создано"
-      });
-      navigate('/');
+    try {
+      if (isEdit && id) {
+        await updateListing(id, listingData);
+        navigate(`/listing/${id}`);
+      } else {
+        await createListing(listingData);
+        navigate('/');
+      }
+    } catch (error) {
+      console.error('Error submitting listing:', error);
     }
   };
   
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (isEdit && id && window.confirm('Вы уверены, что хотите удалить это объявление?')) {
-      deleteListing(id);
-      navigate('/');
+      try {
+        await deleteListing(id);
+        navigate('/');
+      } catch (error) {
+        console.error('Error deleting listing:', error);
+      }
     }
   };
   
