@@ -32,7 +32,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       setListings(fetchedListings);
     } catch (error) {
       console.error('Ошибка при загрузке объявлений:', error);
-      setListings(sampleListings); // Используем примерные данные как запасной вариант
+      setListings(sampleListings);
     } finally {
       setLoading(false);
     }
@@ -43,7 +43,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     try {
       const response = await apiService.login(login, password);
       if (response) {
-        // Получаем полные данные о пользователе
         const userData = await apiService.getUser(response.login);
         setUser(userData);
         
@@ -86,10 +85,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     try {
       await apiService.register(fullName, userType, login, password, age, education, description, image);
       
-      // После успешной регистрации автоматически входим
       await apiService.login(login, password);
       
-      // Получаем полные данные о пользователе
       const userData = await apiService.getUser(login);
       setUser(userData);
       
@@ -118,7 +115,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
           title: 'Успех',
           description: 'Объявление успешно создано',
         });
-        fetchListings(); // Обновляем список объявлений
+        fetchListings();
       } catch (error) {
         console.error('Ошибка создания объявления:', error);
         toast({
@@ -132,35 +129,77 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const updateListing = (id: string, updates: Partial<ListingItem>) => {
-    // Для обновления объявлений потребуется доработка API
-    // Пока используем локальное обновление
-    setListings(
-      listings.map((listing) =>
-        listing.id === id
-          ? { ...listing, ...updates, updatedAt: new Date().toISOString() }
-          : listing
-      )
-    );
+  const updateListing = async (id: string, updates: Partial<ListingItem>) => {
+    if (user) {
+      setLoading(true);
+      try {
+        const [masterId, numberStr] = id.split('_');
+        const number = parseInt(numberStr);
+        
+        await apiService.updateListing(masterId, number, updates);
+        
+        // Обновляем локальное состояние
+        setListings(listings.map(listing => 
+          listing.id === id 
+            ? { ...listing, ...updates, updatedAt: new Date().toISOString() }
+            : listing
+        ));
+        
+        toast({
+          title: 'Успех',
+          description: 'Объявление обновлено',
+        });
+      } catch (error) {
+        console.error('Ошибка обновления объявления:', error);
+        toast({
+          variant: 'destructive',
+          title: 'Ошибка',
+          description: 'Не удалось обновить объявление',
+        });
+      } finally {
+        setLoading(false);
+      }
+    }
   };
 
-  const deleteListing = (id: string) => {
-    // Для удаления объявлений потребуется доработка API
-    // Пока используем локальное удаление
-    setListings(listings.filter((listing) => listing.id !== id));
+  const deleteListing = async (id: string) => {
+    if (user) {
+      setLoading(true);
+      try {
+        const [masterId, numberStr] = id.split('_');
+        const number = parseInt(numberStr);
+        
+        await apiService.deleteListing(masterId, number);
+        
+        // Удаляем из локального состояния
+        setListings(listings.filter(listing => listing.id !== id));
+        
+        toast({
+          title: 'Успех',
+          description: 'Объявление удалено',
+        });
+      } catch (error) {
+        console.error('Ошибка удаления объявления:', error);
+        toast({
+          variant: 'destructive',
+          title: 'Ошибка',
+          description: 'Не удалось удалить объявление',
+        });
+      } finally {
+        setLoading(false);
+      }
+    }
   };
 
   const addComment = async (listingId: string, text: string) => {
     if (user) {
       setLoading(true);
       try {
-        // ID объявления имеет формат masterId_number
         const [masterId, numberStr] = listingId.split('_');
         const number = parseInt(numberStr);
         
         await apiService.addListingComment(user.login, masterId, number, text);
         
-        // Добавляем комментарий локально для немедленного отображения
         const newComment: Comment = {
           id: Date.now().toString(),
           listingId,
@@ -188,16 +227,45 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const deleteComment = async (listingId: string, authorLogin: string) => {
+    if (user) {
+      setLoading(true);
+      try {
+        const [masterId, numberStr] = listingId.split('_');
+        const number = parseInt(numberStr);
+        
+        await apiService.deleteListingComment(masterId, number, authorLogin);
+        
+        // Удаляем из локального состояния
+        setComments(comments.filter(comment => 
+          !(comment.listingId === listingId && comment.userId === authorLogin)
+        ));
+        
+        toast({
+          title: 'Успех',
+          description: 'Комментарий удален',
+        });
+      } catch (error) {
+        console.error('Ошибка удаления комментария:', error);
+        toast({
+          variant: 'destructive',
+          title: 'Ошибка',
+          description: 'Не удалось удалить комментарий',
+        });
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
   const addReview = async (userId: string, text: string, rating: number) => {
     if (user) {
       setLoading(true);
       try {
         console.log(`Sending review from ${user.login} to user ${userId} with rating ${rating}`);
         
-        // Важно! Используем userId как login получателя
         await apiService.addUserReview(user.login, userId, text, rating);
         
-        // Добавляем отзыв локально для немедленного отображения
         const newReview: Review = {
           id: Date.now().toString(),
           userId,
@@ -214,11 +282,39 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
           description: 'Отзыв добавлен',
         });
       } catch (error) {
-        console.error('Ошибка ��обавления отзыва:', error);
+        console.error('Ошибка добавления отзыва:', error);
         toast({
           variant: 'destructive',
           title: 'Ошибка',
           description: 'Не удалось добавить отзыв',
+        });
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
+  const deleteReview = async (userId: string, authorLogin: string) => {
+    if (user) {
+      setLoading(true);
+      try {
+        await apiService.deleteUserReview(userId, authorLogin);
+        
+        // Удаляем из локального состояния
+        setReviews(reviews.filter(review => 
+          !(review.userId === userId && review.authorId === authorLogin)
+        ));
+        
+        toast({
+          title: 'Успех',
+          description: 'Отзыв удален',
+        });
+      } catch (error) {
+        console.error('Ошибка удаления отзыва:', error);
+        toast({
+          variant: 'destructive',
+          title: 'Ошибка',
+          description: 'Не удалось удалить отзыв',
         });
       } finally {
         setLoading(false);
@@ -232,20 +328,17 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       return user;
     } catch (error) {
       console.error(`Ошибка получения пользователя с ID ${id}:`, error);
-      return users.find(u => u.id === id); // Резервный вариант, ищем в локальных данных
+      return users.find(u => u.id === id);
     }
   };
 
   const getUserReviews = async (userId: string): Promise<Review[]> => {
     try {
       const fetchedReviews = await apiService.getUserReviews(userId);
-      // Объединяем загруженные отзывы с локальными (которые могли быть добавлены недавно)
       const localReviews = reviews.filter(review => review.userId === userId);
       
-      // Проверяем дубликаты (может потребоваться более сложная логика)
       const combinedReviews = [...fetchedReviews];
       
-      // Находим локальные отзывы, которых нет в полученных от API
       localReviews.forEach(localReview => {
         const exists = fetchedReviews.some(
           fetchedReview => fetchedReview.authorId === localReview.authorId && 
@@ -260,7 +353,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       return combinedReviews;
     } catch (error) {
       console.error(`Ошибка получения отзывов пользователя ${userId}:`, error);
-      return reviews.filter(review => review.userId === userId); // Резервный вариант
+      return reviews.filter(review => review.userId === userId);
     }
   };
 
@@ -268,7 +361,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     return listings.filter(listing => listing.masterId === userId);
   };
 
-  // New function to update user profile
   const updateUserProfile = async (updates: {
     fullName?: string;
     bio?: string;
@@ -282,18 +374,10 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
     setLoading(true);
     try {
-      // In a real app, we would send this to the API
-      // For now, we'll just update the local state
-      const updatedUser = {
-        ...user,
-        fullName: updates.fullName || user.fullName,
-        bio: updates.bio || user.bio,
-        age: updates.age || user.age,
-        education: updates.education || user.education,
-        image: updates.image || user.image,
-        lastUpdate: new Date().toISOString().split('T')[0]
-      };
+      await apiService.updateUserProfile(user.login, updates);
       
+      // Получаем обновленные данные пользователя
+      const updatedUser = await apiService.getUser(user.login);
       setUser(updatedUser);
       
       // Update users array as well
@@ -320,6 +404,32 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const updateUserStatus = async (userLogin: string, status: string) => {
+    if (!user || user.userType !== 'Админ') {
+      throw new Error('Access denied');
+    }
+
+    setLoading(true);
+    try {
+      await apiService.updateUserStatus(userLogin, status);
+      
+      toast({
+        title: 'Успешно',
+        description: `Статус пользователя изменен на ${status}`,
+      });
+    } catch (error) {
+      console.error('Ошибка изменения статуса пользователя:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Ошибка',
+        description: 'Не удалось изменить статус пользователя',
+      });
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Create context value
   const value: AppContextType = {
     user,
@@ -335,12 +445,15 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     updateListing,
     deleteListing,
     addComment,
+    deleteComment,
     addReview,
+    deleteReview,
     getUserById,
     getUserReviews,
     getUserListings,
     fetchListings,
     updateUserProfile,
+    updateUserStatus,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
