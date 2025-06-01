@@ -46,18 +46,10 @@ const EditProfile = () => {
         image
       });
       
-      toast({
-        title: 'Успешно',
-        description: 'Профиль обновлен'
-      });
-      
       navigate(`/profile/${user.id}`);
     } catch (error) {
-      toast({
-        title: 'Ошибка',
-        description: 'Не удалось обновить профиль',
-        variant: 'destructive'
-      });
+      // Ошибка уже обработана в контексте
+      console.error('Error updating profile:', error);
     }
   };
   
@@ -134,6 +126,10 @@ const EditProfile = () => {
         </form>
       </div>
     </div>
+  );
+};
+
+export default EditProfile;
   );
 };
 
