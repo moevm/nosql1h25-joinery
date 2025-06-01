@@ -28,6 +28,14 @@ const UserInfo = ({ profileUser, formatDate, reviews }: UserInfoProps) => {
   // Check if the current user is logged in and is an admin
   const isCurrentUserAdmin = currentUser && currentUser.userType === 'Админ';
   
+  // Определяем отображаемый тип пользователя
+  const getDisplayUserType = (userType: string) => {
+    if (userType === 'master') return 'Продавец';
+    if (userType === 'buyer') return 'Покупатель';
+    if (userType === 'admin') return 'Администратор';
+    return userType;
+  };
+  
   return (
     <div className="col-span-1">
       <div className="border border-black p-4 mb-6">
@@ -44,11 +52,15 @@ const UserInfo = ({ profileUser, formatDate, reviews }: UserInfoProps) => {
             </Avatar>
           )}
           <h2 className="text-2xl font-bold text-center">{profileUser.fullName}</h2>
+          <p className="text-lg text-center mt-2">{getDisplayUserType(profileUser.userType)}</p>
         </div>
         
         <div className="text-sm">
           <p className="mb-1">Зарегистрирован: {formatDate(profileUser.registrationDate || '')}</p>
           <p>Последние изменения: {formatDate(profileUser.lastUpdate || '')}</p>
+          {profileUser.status && (
+            <p className="mt-2">Статус: <span className={profileUser.status === 'active' ? 'text-green-600' : 'text-red-600'}>{profileUser.status}</span></p>
+          )}
         </div>
         
         <hr className="my-4 border-t border-black" />
@@ -72,7 +84,7 @@ const UserInfo = ({ profileUser, formatDate, reviews }: UserInfoProps) => {
         )}
       </div>
       
-      {profileUser.userType === 'Продавец' && (
+      {(profileUser.userType === 'Продавец' || profileUser.userType === 'master') && (
         <div className="mt-6">
           <Link 
             to={`/?master=${encodeURIComponent(profileUser.fullName)}`}
