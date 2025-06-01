@@ -24,7 +24,9 @@ export interface AppContextType {
   updateListing: (id: string, updates: Partial<ListingItem>) => void;
   deleteListing: (id: string) => void;
   addComment: (listingId: string, text: string) => void;
+  deleteComment: (listingId: string, authorLogin: string) => void;
   addReview: (userId: string, text: string, rating: number) => void;
+  deleteReview: (userId: string, authorLogin: string) => void;
   getUserById: (id: string) => Promise<User | undefined>;
   getUserReviews: (userId: string) => Promise<Review[]>;
   getUserListings: (userId: string) => ListingItem[];
@@ -36,4 +38,5 @@ export interface AppContextType {
     education?: string;
     image?: string;
   }) => Promise<void>;
+  updateUserStatus: (userLogin: string, status: string) => Promise<void>;
 }
