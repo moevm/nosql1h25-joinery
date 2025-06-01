@@ -16,6 +16,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import UserProfile from "./pages/UserProfile";
 import EditProfile from "./pages/EditProfile";
 import Admin from "./pages/Admin";
+import BackupManagement from "./pages/BackupManagement";
 
 const App = () => {
   // Create a client
@@ -64,6 +65,11 @@ const App = () => {
               <Route path="/admin" element={
                 <ProtectedRoute>
                   <Admin />
+                </ProtectedRoute>
+              } />
+              <Route path="/backup-management" element={
+                <ProtectedRoute>
+                  <BackupManagement />
                 </ProtectedRoute>
               } />
               <Route path="*" element={<NotFound />} />
