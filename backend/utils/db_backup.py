@@ -73,11 +73,31 @@ class DatabaseImporter(DatabaseConnection):
             graph_data = json.load(f)
         self.set_graph_data(back_convert(graph_data))
     
+    
+    def _check_data(self, data: dict) -> bool:
+        '''Проверка корректности данных для импорта в БД'''
+        nodes = data.get('nodes')
+        relationships = data.get('relationships')
+        if nodes is None or relationships is None:
+            return False
+        for node in nodes:
+            if 'id' not in node or 'labels' not in node or 'properties' not in node:
+                return False
+        for relationship in relationships:
+            if ('id' not in relationship or 'properties' not in relationship or
+                'type' not in relationship or 'start_node' not in relationship or
+                'end_node' not in relationship):
+                return False
+        return True
+    
 
-    def set_graph_data(self, graph_data: dict):
+    def set_graph_data(self, graph_data: dict) -> bool:
         '''Запись данных в БД'''
+        if not self._check_data(graph_data):
+            return False
         with self.driver.session() as session:
             session.execute_write(self._import_graph, graph_data)
+        return True
 
     
     def _import_graph(self, tx, graph_data):

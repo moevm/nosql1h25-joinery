@@ -230,8 +230,10 @@ def set_backup():
         return jsonify({'error': 'Не переданны данные'}), 400
     
     importer = DatabaseImporter()
-    importer.set_graph_data(backup_data)
-    return jsonify({'message': 'OK'}), 201
+    result = importer.set_graph_data(backup_data)
+    if result:
+        return jsonify({'message': 'OK'}), 201
+    return jsonify({'error': 'Некорректный бэкап'}), 400
 
 
 @app.route('/api/users/<login>/', methods=['PATCH'])
